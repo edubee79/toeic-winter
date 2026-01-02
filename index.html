@@ -10,62 +10,81 @@
 </head>
 <body class="bg-slate-900 text-white min-h-screen">
 
-    <nav class="p-6 flex justify-between items-center max-w-md mx-auto">
-        <h1 class="font-black text-2xl italic tracking-tighter text-indigo-400">WINTER CAMP</h1>
-        <div id="user-display" class="text-xs font-bold text-slate-400"></div>
+    <nav class="p-6 flex justify-between items-center max-w-md mx-auto border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <h1 class="font-black text-xl italic tracking-tighter text-indigo-400">WINTER CAMP</h1>
+        <div class="flex items-center gap-3">
+            <span id="user-display" class="text-[10px] font-bold text-slate-400">학습자 정보 없음</span>
+            <button onclick="handleLogout()" class="text-[10px] bg-slate-800 text-rose-400 px-2 py-1 rounded-md border border-rose-500/30 font-black hover:bg-rose-500 hover:text-white transition-all">
+                EXIT
+            </button>
+        </div>
     </nav>
 
     <main class="max-w-md mx-auto px-6 pt-10 pb-20">
         <div class="mb-10">
             <h2 class="text-4xl font-black mb-2 tracking-tighter leading-tight">CHOOSE YOUR<br><span class="text-indigo-500">MISSION</span></h2>
-            <p class="text-slate-400 font-medium">오늘의 목표를 달성하세요!</p>
+            <p class="text-slate-400 font-medium text-sm">목표를 달성하고 퇴근하세요!</p>
         </div>
 
         <div class="grid gap-4">
-            <button onclick="location.href='shadowing1.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden">
-                <i class="fas fa-microphone-alt absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/50 group-hover:text-indigo-500/30 transition-colors"></i>
+            <button onclick="location.href='shadowing1.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg">
+                <i class="fas fa-microphone-alt absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-indigo-500/30 transition-colors"></i>
                 <span class="text-indigo-400 font-black text-xs uppercase tracking-widest">Part 1</span>
                 <h3 class="text-xl font-black mt-1">SHADOWING</h3>
             </button>
 
-            <button onclick="location.href='shadowing2.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden">
-                <i class="fas fa-headphones absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/50 group-hover:text-rose-500/30 transition-colors"></i>
+            <button onclick="location.href='shadowing2.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg border-l-4 border-l-rose-500">
+                <i class="fas fa-headphones absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-rose-500/30 transition-colors"></i>
                 <span class="text-rose-500 font-black text-xs uppercase tracking-widest">Part 2</span>
                 <h3 class="text-xl font-black mt-1">REAL TEST</h3>
             </button>
 
-            <button onclick="location.href='voca.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden">
-                <i class="fas fa-book-open absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/50 group-hover:text-amber-500/30 transition-colors"></i>
+            <button onclick="location.href='voca.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg">
+                <i class="fas fa-book-open absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-amber-500/30 transition-colors"></i>
                 <span class="text-amber-500 font-black text-xs uppercase tracking-widest">Vocabulary</span>
                 <h3 class="text-xl font-black mt-1">WORD MASTER</h3>
             </button>
         </div>
 
-        <div class="mt-20 flex justify-center opacity-30 hover:opacity-100 transition-opacity">
-            <button onclick="accessAdmin()" class="flex items-center gap-2 text-slate-500 text-[10px] font-black tracking-widest uppercase border border-slate-800 px-5 py-2.5 rounded-full hover:bg-slate-800 transition-all">
-                <i class="fas fa-lock text-[8px]"></i> Admin Menu
+        <div class="mt-24 flex justify-center opacity-30 hover:opacity-100 transition-opacity">
+            <button onclick="accessAdmin()" class="flex items-center gap-2 text-slate-500 text-[9px] font-black tracking-[0.2em] uppercase border border-slate-800 px-4 py-2 rounded-full hover:bg-slate-800 transition-all">
+                <i class="fas fa-shield-alt"></i> Access Admin
             </button>
         </div>
     </main>
 
     <script>
-        // 로그인 정보 표시
-        const user = JSON.parse(localStorage.getItem('toeic_user'));
-        if(user) {
-            document.getElementById('user-display').innerText = `${user.userId}님 환영합니다`;
-        } else {
-            location.href = 'login.html'; // 로그인 안되어있으면 로그인으로
+        // ✅ 1. 페이지 로드 시 사용자 정보 확인
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('toeic_user'));
+            
+            if (user && user.userId) {
+                // 이름과 학교 정보가 있으면 상단에 표시
+                const infoText = `${user.userSchool || ''} ${user.userId}`;
+                document.getElementById('user-display').innerText = infoText;
+            } else {
+                // 정보가 없으면 로그인 페이지로 이동
+                location.href = 'login.html';
+            }
+        });
+
+        // ✅ 2. 로그아웃 처리 함수
+        function handleLogout() {
+            if (confirm("로그아웃 하시겠습니까?\n학습 기록은 서버에 안전하게 저장되어 있습니다.")) {
+                localStorage.removeItem('toeic_user');
+                location.href = 'login.html';
+            }
         }
 
-        // ✅ 관리자 접속 함수
+        // ✅ 3. 관리자 접속 함수 (비밀번호: kang1818^^)
         function accessAdmin() {
             const adminPassword = "kang1818^^"; 
-            const userInput = prompt("관리자 인증이 필요합니다.\n비밀번호를 입력하세요.");
+            const userInput = prompt("관리자 비밀번호를 입력하세요.");
 
             if (userInput === adminPassword) {
                 location.href = "admin.html";
             } else if (userInput !== null) {
-                alert("비밀번호가 일치하지 않습니다.");
+                alert("접근 권한이 없습니다.");
             }
         }
     </script>
