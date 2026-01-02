@@ -47,7 +47,7 @@
         <div id="shadow-area" class="hidden space-y-6">
             <div class="bg-rose-500/10 border-2 border-rose-500/30 p-8 rounded-[2.5rem] text-center">
                 <p class="text-rose-400 font-black text-[10px] mb-4 uppercase tracking-widest italic">Shadowing Mission</p>
-                <h3 id="target-sentence" class="text-xl font-black text-white italic mb-4 leading-tight">Incorrect! Listen again and repeat.</h3>
+                <h3 id="target-sentence" class="text-3xl font-black text-white italic mb-4 leading-tight"></h3>
                 <button onclick="playQuizAudio()" class="text-indigo-400 font-bold text-sm underline opacity-70">다시 듣기</button>
             </div>
             <button id="mic-btn" onclick="startShadowing()" class="w-full py-8 bg-indigo-600 text-white rounded-[2.5rem] text-xl font-black shadow-2xl active:scale-95 transition-all">
@@ -72,19 +72,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ✅ PDF 정답 (0:A, 1:B, 2:C) - 1회 7번(index 0)은 1(B)입니다.
+        const answersDB = {
+            1: [1,2,2,0,2,2,2,1,0,0,0,2,1,2,0,0,2,1,2,0,1,0,2,2,1],
+            2: [1,2,0,1,0,2,1,0,2,1,1,0,2,1,0,1,2,1,0,1,2,0,1,0,2],
+            3: [2,0,1,1,0,0,2,1,0,1,2,0,2,1,1,0,2,1,0,1,2,0,2,1,0],
+            4: [0,2,1,0,2,1,0,1,2,0,1,0,2,1,0,2,1,0,1,2,0,1,2,0,1],
+            5: [1,0,2,1,0,2,1,0,1,2,0,2,1,0,1,2,0,1,0,2,1,0,2,1,0]
+        };
+
         let currentTest = 1;
         let currentIdx = 0;
         let testData = [];
-
-        // ✅ PDF 정답 데이터 (0:A, 1:B, 2:C)
-        const answersDB = {
-            1: [1,2,2,0,2,2,2,1,0,0,0,2,1,2,0,1,0,2,0,2,0,1,0,2,1],
-            2: [1,0,2,2,1,1,0,2,1,1,0,2,2,0,1,0,2,1,0,2,1,0,1,2,1],
-            3: [0,2,1,1,0,1,2,1,0,2,0,1,1,2,0,1,2,0,1,0,2,1,0,2,0],
-            4: [1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1],
-            5: [2,0,1,2,0,1,1,0,2,0,1,2,0,1,0,2,1,0,2,1,0,1,2,0,1]
-        };
-
         const recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
         recognition.lang = 'en-US';
 
@@ -93,7 +92,6 @@
             currentIdx = 0;
             testData = [];
             const currentAnswers = answersDB[num];
-
             for(let i=0; i<25; i++) {
                 let testStr = currentTest < 10 ? '0'+currentTest : currentTest;
                 let qStr = (i+7) < 10 ? '0'+(i+7) : (i+7);
@@ -112,39 +110,34 @@
             document.getElementById('progress').innerText = `TEST ${currentTest} - Q ${data.id}`;
             document.getElementById('quiz-area').classList.remove('hidden');
             document.getElementById('shadow-area').classList.add('hidden');
-            document.getElementById('user-transcript').innerText = "";
         }
 
         window.playQuizAudio = function() {
-            const fileName = testData[currentIdx].audio;
-            const audio = new Audio("audio/" + fileName);
-            audio.play().catch(e => alert("음원 오류: audio/" + fileName));
+            const audio = new Audio("audio/" + testData[currentIdx].audio);
+            audio.play().catch(e => console.log("Audio play error"));
         };
 
         window.checkAnswer = function(choice) {
             if (choice === testData[currentIdx].correct) {
                 goNext();
             } else {
-                startShadowMode();
+                const ansText = testData[currentIdx].correct === 0 ? "ANSWER: A" : (testData[currentIdx].correct === 1 ? "ANSWER: B" : "ANSWER: C");
+                document.getElementById('target-sentence').innerText = ansText;
+                document.getElementById('quiz-area').classList.add('hidden');
+                document.getElementById('shadow-area').classList.remove('hidden');
+                playQuizAudio();
             }
         };
 
-        function startShadowMode() {
-            document.getElementById('quiz-area').classList.add('hidden');
-            document.getElementById('shadow-area').classList.remove('hidden');
-            const audio = new Audio("audio/" + testData[currentIdx].audio);
-            audio.play();
-        }
-
         window.startShadowing = function() {
             recognition.start();
-            document.getElementById('mic-btn').innerText = "듣는 중...";
+            document.getElementById('mic-btn').innerText = "Listening...";
         };
 
         recognition.onresult = (event) => {
             const result = event.results[0][0].transcript;
             document.getElementById('user-transcript').innerText = `내 발음: "${result}"`;
-            setTimeout(() => { goNext(); }, 1000);
+            setTimeout(() => { goNext(); }, 1000); // 쉐도잉 하면 다음 문제로
             document.getElementById('mic-btn').innerText = "마이크 누르고 따라하기";
         };
 
@@ -167,7 +160,7 @@
                     }, { merge: true });
                 } catch (e) { console.error(e); }
             }
-            alert(`TEST ${currentTest} 완료!`);
+            alert(`TEST ${currentTest} 완료! 결과가 전송되었습니다.`);
             location.href = "index.html";
         }
     </script>
