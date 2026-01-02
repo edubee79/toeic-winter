@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voca Mastery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; }
+        .word-card { perspective: 1000px; }
+        .card-inner { transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; position: relative; }
+        .card-inner.is-flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 2rem; padding: 2rem; }
+        .card-back { transform: rotateY(180deg); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <div class="max-w-md mx-auto px-4 py-8">
+        
+        <div id="day-selector" class="space-y-6">
+            <header class="flex justify-between items-center mb-8">
+                <button onclick="location.href='index.html'" class="text-slate-400"><i class="fas fa-arrow-left"></i></button>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic">VOCA DAY</h1>
+                <div class="w-8"></div>
+            </header>
+            <div class="grid grid-cols-4 gap-3" id="day-grid"></div>
+        </div>
+
+        <div id="main-study" class="hidden">
+            <header class="text-center mb-10">
+                <h1 id="dayTitle" class="text-4xl font-black text-slate-900 mb-4 tracking-tighter">Day --</h1>
+                <div id="progressStep" class="flex justify-center gap-3">
+                    <div class="step-dot w-2.5 h-2.5 rounded-full bg-indigo-600"></div>
+                    <div class="step-dot w-2.5 h-2.5 rounded-full bg-slate-200"></div>
+                    <div class="step-dot w-2.5 h-2.5 rounded-full bg-slate-200"></div>
+                </div>
+            </header>
+
+            <div id="step1" class="bg-white rounded-[3rem] shadow-xl p-10 text-center border border-slate-100">
+                <p class="text-slate-400 font-bold text-xs uppercase tracking-widest mb-10">Do you know this word?</p>
+                <div class="h-32 flex items-center justify-center mb-12">
+                    <span id="sortWord" class="text-5xl font-black text-indigo-600 tracking-tight">Loading...</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="sortWord(false)" class="bg-slate-100 py-6 rounded-[2rem] text-slate-400 font-black text-xl active:scale-95 transition">몰라요</button>
+                    <button onclick="sortWord(true)" class="bg-slate-900 py-6 rounded-[2rem] text-white font-black text-xl shadow-lg active:scale-95 transition">알아요</button>
+                </div>
+                <div class="mt-8 text-slate-300 font-bold"><span id="sortCount">1</span> / <span id="totalSort">--</span></div>
+            </div>
+
+            <div id="step2" class="hidden">
+                <div class="word-card h-96 mb-8">
+                    <div id="cardInner" class="card-inner w-full h-full shadow-2xl">
+                        <div class="card-front bg-white border-2 border-slate-100 text-center">
+                            <span id="flashWord" class="text-5xl font-black text-slate-900 tracking-tight">Word</span>
+                        </div>
+                        <div class="card-back bg-indigo-600 text-white text-center p-8">
+                            <div>
+                                <span id="flashMean" class="block text-3xl font-black mb-6">뜻</span>
+                                <p id="flashEx" class="italic text-indigo-100 text-lg leading-snug">Example sentence here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <button id="memorizedBtn" class="bg-emerald-500 text-white py-6 rounded-[2rem] font-black text-xl shadow-xl active:scale-95 transition">외웠습니다! (삭제)</button>
+                    <button id="nextFlashBtn" class="hidden bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xl shadow-xl active:scale-95 transition">다음 단어 (반복)</button>
+                </div>
+            </div>
+
+            <div id="step3" class="hidden bg-white rounded-[3rem] shadow-xl p-10 border border-slate-100">
+                <h2 class="text-xs font-black text-slate-400 text-center uppercase tracking-widest mb-10">Final Test</h2>
+                <div class="text-center mb-12 h-24 flex items-center justify-center">
+                    <span id="quizWord" class="text-4xl font-black text-indigo-600 italic">Quiz</span>
+                </div>
+                <div id="quizOptions" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8",
+            authDomain: "eduthot-fb088.firebaseapp.com",
+            projectId: "eduthot-fb088",
+            storageBucket: "eduthot-fb088.firebasestorage.app",
+            messagingSenderId: "919552710378",
+            appId: "1:919552710378:web:7ba72ea2d195e092f8a993"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let allWords = [], unknownWords = [], nextLoopWords = [], quizWords = [];
+        let sortIdx = 0, quizIdx = 0, correctCount = 0, selectedDay = "";
+
+        const dayGrid = document.getElementById('day-grid');
+        for(let i=1; i<=20; i++) {
+            const btn = document.createElement('button');
+            btn.className = "py-4 bg-white border-2 border-slate-100 rounded-2xl font-black text-slate-400 hover:border-indigo-500 hover:text-indigo-600 transition-all";
+            btn.innerText = i;
+            btn.onclick = () => startStudy(i);
+            dayGrid.appendChild(btn);
+        }
+
+        async function startStudy(day) {
+            selectedDay = day.toString().padStart(2, '0');
+            const docSnap = await getDoc(doc(db, "Vocabulary", `Day${selectedDay}`));
+            if (docSnap.exists()) {
+                allWords = docSnap.data().words;
+                document.getElementById('totalSort').innerText = allWords.length;
+                document.getElementById('dayTitle').innerText = `Day ${day}`;
+                document.getElementById('day-selector').classList.add('hidden');
+                document.getElementById('main-study').classList.remove('hidden');
+                showSortWord();
+            } else { alert("데이터가 없습니다."); }
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'en-US';
+            speech.rate = 0.9;
+            window.speechSynthesis.speak(speech);
+        }
+
+        window.sortWord = (known) => {
+            if (!known) unknownWords.push(allWords[sortIdx]);
+            sortIdx++;
+            if (sortIdx < allWords.length) showSortWord();
+            else startStep2();
+        };
+
+        function showSortWord() {
+            document.getElementById('sortWord').innerText = allWords[sortIdx].word;
+            document.getElementById('sortCount').innerText = sortIdx + 1;
+        }
+
+        function startStep2() {
+            if (unknownWords.length === 0) { startStep3(); return; }
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            updateDots(1);
+            showFlashCard();
+        }
+
+        function showFlashCard() {
+            const word = unknownWords[0];
+            document.getElementById('flashWord').innerText = word.word;
+            document.getElementById('flashMean').innerText = word.mean;
+            document.getElementById('flashEx').innerText = word.ex || "";
+            document.getElementById('cardInner').classList.remove('is-flipped');
+            document.getElementById('memorizedBtn').classList.remove('hidden');
+            document.getElementById('nextFlashBtn').classList.add('hidden');
+        }
+
+        document.getElementById('cardInner').onclick = () => {
+            if (!document.getElementById('cardInner').classList.contains('is-flipped')) {
+                document.getElementById('cardInner').classList.add('is-flipped');
+                speak(document.getElementById('flashWord').innerText);
+                document.getElementById('memorizedBtn').classList.add('hidden');
+                document.getElementById('nextFlashBtn').classList.remove('hidden');
+            }
+        };
+
+        document.getElementById('memorizedBtn').onclick = () => { unknownWords.shift(); checkCycle(); };
+        document.getElementById('nextFlashBtn').onclick = () => { nextLoopWords.push(unknownWords.shift()); checkCycle(); };
+
+        function checkCycle() {
+            if (unknownWords.length === 0) {
+                if (nextLoopWords.length === 0) startStep3();
+                else { unknownWords = [...nextLoopWords]; nextLoopWords = []; showFlashCard(); }
+            } else showFlashCard();
+        }
+
+        function startStep3() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+            updateDots(2);
+            quizWords = [...allWords].sort(() => 0.5 - Math.random()).slice(0, 25);
+            showQuiz();
+        }
+
+        function showQuiz() {
+            const correct = quizWords[quizIdx];
+            document.getElementById('quizWord').innerText = correct.word;
+            let options = [correct.mean];
+            while(options.length < 4) {
+                let r = allWords[Math.floor(Math.random()*allWords.length)].mean;
+                if(!options.includes(r)) options.push(r);
+            }
+            options.sort(() => 0.5 - Math.random());
+            const container = document.getElementById('quizOptions');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full py-5 px-6 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-left hover:bg-indigo-50 transition-all";
+                btn.innerText = opt;
+                btn.onclick = async () => {
+                    if(opt === correct.mean) { correctCount++; alert("정답! ⭕"); }
+                    else alert(`오답! 정답: ${correct.mean}`);
+                    quizIdx++;
+                    if(quizIdx < quizWords.length) showQuiz();
+                    else await finishQuiz();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        async function finishQuiz() {
+            const score = Math.round((correctCount / quizWords.length) * 100);
+            const user = JSON.parse(localStorage.getItem('toeic_user'));
+            if (score >= 80 && user) {
+                // ✅ 'Winter_Users' 컬렉션에 분리 저장
+                await setDoc(doc(db, "Winter_Users", user.userId), {
+                    userId: user.userId, userName: user.userName, userClass: user.userClass,
+                    passedVocaDays: arrayUnion(parseInt(selectedDay).toString()),
+                    lastUpdate: new Date().toISOString()
+                }, { merge: true });
+                alert(`🏆 통과! 점수: ${score}점\n기록이 저장되었습니다.`);
+                location.href = "index.html";
+            } else { alert(`😟 ${score}점 미달입니다. 다시 도전하세요.`); startStep3(); }
+        }
+
+        function updateDots(idx) {
+            const dots = document.querySelectorAll('.step-dot');
+            dots.forEach((d, i) => d.className = i <= idx ? "step-dot w-2.5 h-2.5 rounded-full bg-indigo-600" : "step-dot w-2.5 h-2.5 rounded-full bg-slate-200");
+        }
+    </script>
+</body>
+</html>

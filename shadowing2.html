@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 2 실전 훈련</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+
+    <div id="start-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center p-10 text-center">
+        <h2 class="text-2xl font-black mb-4">LC Part 2 실전 테스트</h2>
+        <p class="text-slate-400 mb-8 font-bold text-sm">기출 음원을 듣고 정답을 맞추세요.<br>틀리면 쉐도잉을 완료해야 넘어갑니다.</p>
+        <button id="unlock-btn" class="w-full max-w-xs py-5 bg-indigo-600 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all">테스트 시작하기</button>
+    </div>
+
+    <nav class="p-6 flex justify-between items-center max-w-md mx-auto">
+        <button onclick="location.href='index.html'"><i class="fas fa-arrow-left text-slate-400"></i></button>
+        <span id="progress" class="font-black text-indigo-400 uppercase tracking-tighter">Q 7 / 31</span>
+        <div class="w-4"></div>
+    </nav>
+
+    <main class="max-w-md mx-auto px-6">
+        <div id="quiz-area" class="space-y-8">
+            <div class="bg-white rounded-[3rem] p-12 text-center shadow-2xl relative overflow-hidden">
+                <button onclick="playQuizAudio()" class="w-24 h-24 bg-indigo-600 rounded-full text-white text-4xl shadow-xl active:scale-95 transition-transform">
+                    <i class="fas fa-play ml-1"></i>
+                </button>
+                <p class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest">Listen to the Question</p>
+            </div>
+
+            <div class="grid gap-3">
+                <button onclick="checkAnswer(0)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-slate-700">(A) Option A</button>
+                <button onclick="checkAnswer(1)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-slate-700">(B) Option B</button>
+                <button onclick="checkAnswer(2)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-slate-700">(C) Option C</button>
+            </div>
+        </div>
+
+        <div id="shadow-area" class="hidden space-y-6">
+            <div class="bg-rose-500/10 border-2 border-rose-500/30 p-8 rounded-[2.5rem] text-center">
+                <p class="text-rose-500 font-black text-[10px] mb-4 uppercase tracking-widest">Incorrect! Shadowing Task</p>
+                <h3 id="target-sentence" class="text-xl font-black text-white italic mb-4 leading-tight tracking-tight"></h3>
+                <button onclick="playShadowVoice()" class="text-indigo-400 font-bold text-sm underline opacity-70">원어민 발음 다시 듣기</button>
+            </div>
+
+            <button id="mic-btn" onclick="startShadowing()" class="w-full py-8 bg-indigo-600 text-white rounded-[2.5rem] text-xl font-black shadow-2xl active:scale-95 transition-all">
+                <i class="fas fa-microphone mr-2"></i> 마이크 누르고 따라하기
+            </button>
+            <p id="user-transcript" class="text-center text-indigo-400 font-bold italic text-sm min-h-[1.5rem]"></p>
+        </div>
+    </main>
+
+    <script>
+        // TEST 1 기출 데이터 및 파일명 자동 생성 (강사님 요청 형식: Test_01-07.mp3)
+        const part2Data = [
+            { id: 7, q: "How old is this building?", a: "About ten years old.", correct: 1, audio: "Test_01-07.mp3" },
+            { id: 8, q: "Can you come to my jazz performance tonight?", a: "Sure, I'll be there!", correct: 2, audio: "Test_01-08.mp3" },
+            { id: 9, q: "Which apartment submitted a work order?", a: "It came from the tenants in B23.", correct: 2, audio: "Test_01-09.mp3" },
+            { id: 10, q: "Will you contact the vendor about changing our delivery date?", a: "Of course, I'll take care of it.", correct: 0, audio: "Test_01-10.mp3" },
+            { id: 11, q: "Why was the maintenance worker here?", a: "Because a light needed to be fixed.", correct: 2, audio: "Test_01-11.mp3" },
+            { id: 12, q: "Did management make a hiring decision yet?", a: "Yes, they chose Jacob Borgman.", correct: 2, audio: "Test_01-12.mp3" },
+            { id: 13, q: "Do you want to eat here in our cafeteria or go out?", a: "Let's eat here.", correct: 2, audio: "Test_01-13.mp3" },
+            { id: 14, q: "Didn't you e-mail the employment contract to Mr. Patel yesterday?", a: "No, I'll send it now.", correct: 1, audio: "Test_01-14.mp3" },
+            { id: 15, q: "Our division's picnic is this Saturday, right?", a: "There's a lot of rain in the forecast.", correct: 0, audio: "Test_01-15.mp3" },
+            { id: 16, q: "Would you like coffee or tea?", a: "Just water, please.", correct: 0, audio: "Test_01-16.mp3" },
+            { id: 17, q: "We achieved our sales targets this month.", a: "That's excellent news!", correct: 0, audio: "Test_01-17.mp3" },
+            { id: 18, q: "How often do you travel for your job?", a: "About once a month.", correct: 2, audio: "Test_01-18.mp3" },
+            { id: 19, q: "We should hike the Wildflower Trail today.", a: "I didn't bring boots.", correct: 1, audio: "Test_01-19.mp3" },
+            { id: 20, q: "You've booked a hotel in London, haven't you?", a: "Yes, I made a reservation last week.", correct: 2, audio: "Test_01-20.mp3" },
+            { id: 21, q: "Are there any tickets left for tonight's concert?", a: "It's sold out.", correct: 0, audio: "Test_01-21.mp3" },
+            { id: 22, q: "Haven't you used this software before?", a: "I haven't had the chance.", correct: 1, audio: "Test_01-22.mp3" },
+            { id: 23, q: "When is the new blender going to be released?", a: "The prototype is still being tested.", correct: 2, audio: "Test_01-23.mp3" },
+            { id: 24, q: "Who's picking up our clients at the airport?", a: "They decided to drive.", correct: 0, audio: "Test_01-24.mp3" },
+            { id: 25, q: "Where are the red roses that came in this morning?", a: "I needed some for a large bouquet.", correct: 2, audio: "Test_01-25.mp3" },
+            { id: 26, q: "This film has been nominated for several awards.", a: "Why don't we go see it?", correct: 0, audio: "Test_01-26.mp3" },
+            { id: 27, q: "Who's interested in starting a car pool program?", a: "Clara's already organizing one.", correct: 1, audio: "Test_01-27.mp3" },
+            { id: 28, q: "Where will I teach my workshop this month?", a: "We just sent an e-mail to all instructors.", correct: 0, audio: "Test_01-28.mp3" },
+            { id: 29, q: "Why are we moving these sweaters to the back of the store?", a: "Our spring merchandise is arriving soon.", correct: 2, audio: "Test_01-29.mp3" },
+            { id: 30, q: "Would you be interested in working on some of these contracts?", a: "I have very limited time.", correct: 2, audio: "Test_01-30.mp3" },
+            { id: 31, q: "What type of job are you looking for?", a: "I really like working with computers.", correct: 1, audio: "Test_01-31.mp3" }
+        ];
+
+        let currentIdx = 0;
+        const synth = window.speechSynthesis;
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+
+        document.getElementById('unlock-btn').onclick = () => {
+            synth.speak(new SpeechSynthesisUtterance(" "));
+            document.getElementById('start-overlay').classList.add('hidden');
+            loadQuiz();
+        };
+
+        function loadQuiz() {
+            const data = part2Data[currentIdx];
+            document.getElementById('progress').innerText = `Q ${data.id} / 31`;
+            document.getElementById('quiz-area').classList.remove('hidden');
+            document.getElementById('shadow-area').classList.add('hidden');
+            document.getElementById('user-transcript').innerText = "";
+        }
+
+        function playQuizAudio() {
+            const fileName = part2Data[currentIdx].audio;
+            // audio 폴더 내의 파일을 재생합니다.
+            const audio = new Audio(`audio/${fileName}`);
+            
+            audio.play().catch(e => {
+                console.log("MP3 파일 재생 실패, TTS로 읽습니다.");
+                const ut = new SpeechSynthesisUtterance(part2Data[currentIdx].q);
+                ut.lang = 'en-US';
+                synth.speak(ut);
+            });
+        }
+
+        function checkAnswer(choice) {
+            if (choice === part2Data[currentIdx].correct) {
+                alert("정답입니다!");
+                goNext();
+            } else {
+                alert("틀렸습니다! 정답 문장을 쉐도잉하세요.");
+                startShadowMode();
+            }
+        }
+
+        function startShadowMode() {
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('shadow-area').classList.remove('hidden');
+            document.getElementById('target-sentence').innerText = part2Data[currentIdx].a;
+            playShadowVoice();
+        }
+
+        function playShadowVoice() {
+            synth.cancel();
+            const ut = new SpeechSynthesisUtterance(part2Data[currentIdx].a);
+            ut.lang = 'en-US';
+            ut.rate = 0.8;
+            synth.speak(ut);
+        }
+
+        function startShadowing() {
+            recognition.start();
+            document.getElementById('mic-btn').innerText = "인식 중...";
+            document.getElementById('mic-btn').classList.replace('bg-indigo-600', 'bg-rose-500');
+        }
+
+        recognition.onresult = (event) => {
+            const result = event.results[0][0].transcript.toLowerCase();
+            const target = part2Data[currentIdx].a.toLowerCase();
+            document.getElementById('user-transcript').innerText = `내 발음: "${result}"`;
+
+            // 느슨한 일치 확인 (정답의 첫 2단어 포함 여부 등)
+            const targetWords = target.split(' ');
+            if (result.includes(targetWords[0]) || result.length > 5) {
+                alert("통과!");
+                goNext();
+            } else {
+                alert("아쉬워요! 다시 한 번 듣고 따라해 보세요.");
+                playShadowVoice();
+            }
+            document.getElementById('mic-btn').innerText = "마이크 누르고 따라하기";
+            document.getElementById('mic-btn').classList.replace('bg-rose-500', 'bg-indigo-600');
+        };
+
+        function goNext() {
+            currentIdx++;
+            if (currentIdx < part2Data.length) loadQuiz();
+            else {
+                alert("축하합니다! 테스트 1의 파트 2를 모두 정복하셨습니다.");
+                location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>
