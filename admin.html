@@ -2,32 +2,39 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>강사 전용 대시보드</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; }
+    </style>
 </head>
-<body class="bg-slate-50 p-6 md:p-12">
+<body class="bg-slate-50 p-6">
     <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-end mb-10">
-            <div>
-                <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic">WINTER STATUS</h1>
-                <p class="text-slate-400 font-bold mt-2 uppercase text-xs tracking-widest">반별 정렬: 수강반 내림차순 > 이름 내림차순</p>
-            </div>
-            <button onclick="load()" class="w-12 h-12 bg-white shadow-sm border border-slate-200 rounded-2xl text-slate-400 hover:text-indigo-600 transition-all active:rotate-180 duration-500"><i class="fas fa-sync-alt"></i></button>
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-black text-slate-800 tracking-tighter">
+                <i class="fas fa-user-shield mr-2 text-indigo-600"></i>학생 학습 현황
+            </h1>
+            <button onclick="location.href='index.html'" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                메인으로 이동
+            </button>
         </header>
-        
-        <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
+
+        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
             <table class="w-full text-left border-collapse">
-                <thead class="bg-slate-900 text-white text-[11px] uppercase tracking-widest font-black">
-                    <tr>
-                        <th class="p-6">수강반</th>
-                        <th class="p-6">학생 정보</th>
-                        <th class="p-6">학습 완료 현황</th>
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100">
+                        <th class="p-4 font-black text-slate-400 text-xs uppercase">반</th>
+                        <th class="p-4 font-black text-slate-400 text-xs uppercase">이름(학번)</th>
+                        <th class="p-4 font-black text-slate-400 text-xs uppercase">단어 통과(Day)</th>
+                        <th class="p-4 font-black text-slate-400 text-xs uppercase">쉐도잉 완료</th>
+                        <th class="p-4 font-black text-slate-400 text-xs uppercase">최근 학습</th>
                     </tr>
                 </thead>
-                <tbody id="status-list" class="divide-y divide-slate-50">
-                    <tr><td colspan="3" class="p-20 text-center text-slate-300 font-bold">데이터를 불러오는 중...</td></tr>
+                <tbody id="user-list">
+                    <tr><td colspan="5" class="p-10 text-center text-slate-400 font-bold">데이터를 불러오는 중...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -45,56 +52,45 @@
             messagingSenderId: "919552710378",
             appId: "1:919552710378:web:7ba72ea2d195e092f8a993"
         };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function load() {
-            const list = document.getElementById('status-list');
+        async function loadData() {
             try {
-                const snap = await getDocs(collection(db, "Winter_Users"));
-                let users = [];
-                
-                snap.forEach(doc => {
-                    users.push(doc.data());
-                });
+                const querySnapshot = await getDocs(collection(db, "Winter_Users"));
+                const listContainer = document.getElementById('user-list');
+                listContainer.innerHTML = '';
 
-                // 1. 반별 정렬(내림차순) 후 2. 이름 정렬(내림차순)
-                users.sort((a, b) => {
-                    // 수강반 비교 (780반 -> 650반 순서)
-                    if (a.userClass > b.userClass) return -1;
-                    if (a.userClass < b.userClass) return 1;
-                    
-                    // 같은 반일 경우 이름 비교 (내림차순: 하 -> 가)
-                    if (a.userName > b.userName) return -1;
-                    if (a.userName < b.userName) return 1;
-                    return 0;
-                });
-
-                list.innerHTML = "";
-                if(users.length === 0) {
-                    list.innerHTML = `<tr><td colspan="3" class="p-20 text-center text-slate-300 font-bold">아직 등록된 학생이 없습니다.</td></tr>`;
+                if (querySnapshot.empty) {
+                    listContainer.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400 font-bold">아직 기록이 없습니다.</td></tr>';
                     return;
                 }
 
-                users.forEach(d => {
-                    const days = d.passedVocaDays 
-                        ? d.passedVocaDays.sort((a,b)=>a-b).map(day => `<span class="inline-block bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-black mr-1 mb-1 border border-indigo-100">DAY ${day}</span>`).join('') 
-                        : '<span class="text-slate-300 text-[10px] font-bold">진행 기록 없음</span>';
-                    
-                    list.innerHTML += `
-                        <tr class="hover:bg-indigo-50/30 transition-colors">
-                            <td class="p-6">
-                                <span class="px-3 py-1 ${d.userClass.includes('780') ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'} rounded-lg text-[10px] font-black uppercase">${d.userClass}</span>
-                            </td>
-                            <td class="p-6">
-                                <div class="font-black text-slate-800 text-base">${d.userName}</div>
-                                <div class="text-[10px] text-slate-400 font-bold tracking-tight">${d.userId}</div>
-                            </td>
-                            <td class="p-6">
-                                <div class="flex flex-wrap">${days}</div>
-                            </td>
-                        </tr>`;
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const vocaDays = data.passedVocaDays ? data.passedVocaDays.sort((a,b)=>a-b).join(', ') : '-';
+                    const shadowing = data.passedShadowing ? data.passedShadowing.join(', ') : '-';
+                    const date = data.lastUpdate ? new Date(data.lastUpdate).toLocaleString('ko-KR') : '-';
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-50 hover:bg-slate-50/50 transition-all text-sm";
+                    tr.innerHTML = `
+                        <td class="p-4 font-bold text-slate-500">${data.userClass || '-'}</td>
+                        <td class="p-4 font-black text-slate-800">${data.userName} (${data.userId})</td>
+                        <td class="p-4"><span class="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold">Day ${vocaDays}</span></td>
+                        <td class="p-4"><span class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-bold">${shadowing}</span></td>
+                        <td class="p-4 text-[10px] text-slate-400 font-medium">${date}</td>
+                    `;
+                    listContainer.appendChild(tr);
                 });
             } catch (error) {
-                console.error(error);
-                list.innerHTML = `<tr><td colspan="3" class="p-20 text-center text-rose-300 font-bold">오류가 발생했습니다. 콘솔을 확인하세요.</td>
+                console.error("Error loading data:", error);
+                document.getElementById('user-list').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400 font-bold">데이터를 가져오지 못했습니다.</td></tr>';
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
