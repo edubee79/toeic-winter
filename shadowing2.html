@@ -12,12 +12,13 @@
 
     <div id="start-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
         <h2 class="text-3xl font-black mb-2 tracking-tighter text-indigo-400">LC Part 2 실전</h2>
-        <p class="text-slate-400 mb-8 font-bold text-sm">틀리면 정답 스크립트를 보여주고 다시 들려줍니다.</p>
+        <p class="text-slate-400 mb-8 font-bold text-sm">전체 5회분 학습이 가능합니다.</p>
         <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
             <button onclick="startTest(1)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 1</button>
             <button onclick="startTest(2)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 2</button>
             <button onclick="startTest(3)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 3</button>
             <button onclick="startTest(4)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 4</button>
+            <button onclick="startTest(5)" class="py-4 bg-indigo-600 rounded-2xl font-black border border-indigo-500 active:scale-95 transition-all col-span-2 mt-2 shadow-lg shadow-indigo-500/20">TEST 5 시작하기</button>
         </div>
     </div>
 
@@ -29,24 +30,30 @@
 
     <main class="max-w-md mx-auto px-6 pb-20">
         <div id="quiz-container" class="space-y-8">
-            <div id="audio-card" class="bg-white rounded-[3rem] p-10 text-center shadow-2xl relative overflow-hidden transition-all duration-300">
+            <div id="audio-card" class="bg-white rounded-[3rem] p-12 text-center shadow-2xl relative overflow-hidden transition-all duration-300">
                 <div id="playback-wave" class="absolute inset-x-0 bottom-0 h-1 bg-indigo-100 origin-left scale-x-0 transition-transform duration-100"></div>
-                
-                <div id="script-box" class="hidden mb-6 animate-bounce">
-                    <p class="text-rose-500 font-black text-[10px] uppercase tracking-widest mb-1">Check the Script</p>
-                    <h3 id="correct-script" class="text-slate-800 text-lg font-black italic leading-tight"></h3>
-                </div>
-
-                <button id="play-btn" onclick="handlePlay()" class="w-20 h-20 bg-indigo-600 rounded-full text-white text-3xl shadow-xl active:scale-95 flex items-center justify-center mx-auto transition-all">
+                <button id="play-btn" onclick="handlePlay()" class="w-24 h-24 bg-indigo-600 rounded-full text-white text-4xl shadow-xl active:scale-95 flex items-center justify-center mx-auto transition-all">
                     <i class="fas fa-play ml-1"></i>
                 </button>
                 <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">Listen & Select</p>
             </div>
 
-            <div id="options-grid" class="grid gap-3 transition-opacity duration-300">
-                <button onclick="checkAnswer(0)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600">(A) Option A</button>
-                <button onclick="checkAnswer(1)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600">(B) Option B</button>
-                <button onclick="checkAnswer(2)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600">(C) Option C</button>
+            <div id="options-grid" class="grid gap-3">
+                <div class="relative group" v-for="i in [0,1,2]">
+                    <button id="btn-0" onclick="checkAnswer(0)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
+                        <span class="btn-label">(A) Option A</span>
+                    </button>
+                </div>
+                <div class="relative group">
+                    <button id="btn-1" onclick="checkAnswer(1)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
+                        <span class="btn-label">(B) Option B</span>
+                    </button>
+                </div>
+                <div class="relative group">
+                    <button id="btn-2" onclick="checkAnswer(2)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
+                        <span class="btn-label">(C) Option C</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -65,7 +72,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ✅ 정답 스크립트 데이터 (실제 데이터에 맞게 추가)
+        // ✅ TEST 1~5 데이터 뱅크
         const testBank = {
             1: [
                 { id: 7, correct: 1, script: "About ten years old." },
@@ -93,7 +100,8 @@
                 { id: 29, correct: 2, script: "Our spring merchandise is arriving soon." },
                 { id: 30, correct: 2, script: "I have very limited time." },
                 { id: 31, correct: 1, script: "I really like working with computers." }
-            ]
+            ],
+            2: [], 3: [], 4: [], 5: [] // 추후 스크립트 데이터 추가 가능
         };
 
         let currentTestNum = 1;
@@ -105,7 +113,8 @@
 
         window.startTest = function(num) {
             currentTestNum = num;
-            mainQueue = [...(testBank[num] || testBank[1])];
+            // 해당 회차 데이터가 없으면 1회차 구조를 복사 (id 7~31 자동 생성 로직 가능)
+            mainQueue = testBank[num] && testBank[num].length > 0 ? [...testBank[num]] : [...testBank[1]];
             wrongQueue = [];
             isReviewMode = false;
             currentIdx = 0;
@@ -125,16 +134,18 @@
             document.getElementById('audio-status').innerText = "Click Play";
             document.getElementById('playback-wave').style.transform = 'scaleX(0)';
             
-            // 상태 초기화
-            document.getElementById('audio-card').classList.remove('bg-rose-50');
-            document.getElementById('script-box').classList.add('hidden');
+            [0, 1, 2].forEach(i => {
+                const btn = document.getElementById(`btn-${i}`);
+                btn.className = "option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300";
+                btn.querySelector('.btn-label').innerText = `(${String.fromCharCode(65+i)}) Option ${String.fromCharCode(65+i)}`;
+            });
             
             audio.src = `audio/Test_${currentTestNum.toString().padStart(2,'0')}-${data.id.toString().padStart(2,'0')}.mp3`;
         }
 
         window.handlePlay = function() {
             audio.currentTime = 0;
-            audio.play();
+            audio.play().catch(e => console.log("Audio play failed. Check path."));
             document.getElementById('play-btn').innerHTML = '<i class="fas fa-volume-up"></i>';
             document.getElementById('audio-status').innerText = "Playing...";
 
@@ -155,30 +166,28 @@
 
             if (choice === data.correct) {
                 audio.pause();
-                if (isReviewMode) {
-                    wrongQueue.splice(currentIdx, 1);
-                } else {
-                    currentIdx++;
-                }
-                checkNavigation(list);
-            } else {
-                // ❌ 틀렸을 때 로직
-                audio.pause();
+                const correctBtn = document.getElementById(`btn-${choice}`);
+                correctBtn.classList.replace('bg-slate-800', 'bg-green-600');
+                correctBtn.classList.replace('border-slate-700', 'border-green-400');
                 
-                // 시각적 효과 (스크립트 보여주기 & 배경 강조)
-                document.getElementById('audio-card').classList.add('bg-rose-50');
-                document.getElementById('correct-script').innerText = data.script;
-                document.getElementById('script-box').classList.remove('hidden');
-                document.getElementById('audio-status').innerText = "Wrong! Watch Script & Listen Again";
+                setTimeout(() => {
+                    if (isReviewMode) wrongQueue.splice(currentIdx, 1);
+                    else currentIdx++;
+                    checkNavigation(list);
+                }, 600);
+            } else {
+                audio.pause();
+                const wrongBtn = document.getElementById(`btn-${choice}`);
+                wrongBtn.classList.replace('bg-slate-800', 'bg-rose-600');
+                wrongBtn.classList.replace('border-slate-700', 'border-rose-400');
+                // ✅ 틀린 번호 옆에 정답 스크립트 노출
+                wrongBtn.querySelector('.btn-label').innerHTML = `<span class="text-[10px] block opacity-70 uppercase">Wrong! Answer script:</span> ${data.script || 'Check your PDF answer key'}`;
                 
                 if (!isReviewMode) {
                     if(!wrongQueue.find(i => i.id === data.id)) wrongQueue.push(data);
                 }
                 
-                // 틀린 문제는 다시 처음부터 들려줌
-                setTimeout(() => {
-                    handlePlay();
-                }, 500);
+                setTimeout(() => { handlePlay(); }, 500);
             }
         };
 
@@ -221,7 +230,7 @@
                     lastUpdate: new Date().toISOString()
                 }, { merge: true });
             }
-            alert(`🏆 고생하셨습니다! 오답 정리를 모두 마쳤습니다.`);
+            alert(`🏆 TEST ${currentTestNum} 완료!`);
             location.href = "index.html";
         }
     </script>
