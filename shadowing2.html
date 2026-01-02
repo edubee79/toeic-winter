@@ -8,36 +8,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        body { font-family: 'Pretendard', sans-serif; }
+        body { font-family: 'Pretendard', sans-serif; background-color: #0f172a; color: white; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="min-h-screen">
     <div class="max-w-md mx-auto px-4 py-8">
         <header class="flex justify-between items-center mb-12">
-            <button onclick="location.href='index.html'" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <button onclick="location.href='index.html'" class="text-slate-400 hover:text-white transition-colors">
                 <i class="fas fa-arrow-left text-xl"></i>
             </button>
-            <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic">SHADOWING 2</h1>
+            <h1 id="test-title" class="text-2xl font-black tracking-tighter italic text-white uppercase">TEST 01</h1>
             <div class="w-8"></div>
         </header>
 
-        <div id="quiz-card" class="bg-white rounded-[3rem] shadow-2xl p-10 text-center border border-slate-100 relative overflow-hidden">
-            <p id="q-label" class="text-slate-400 font-bold text-xs uppercase tracking-widest mb-10 italic">Question 07</p>
+        <div class="bg-slate-800 rounded-[3rem] shadow-2xl p-10 text-center border border-slate-700">
+            <p id="q-label" class="text-indigo-400 font-bold text-xs uppercase tracking-widest mb-10 italic">Question 07</p>
             
             <div class="mb-12">
-                <button id="play-audio-btn" class="w-24 h-24 bg-indigo-600 text-white rounded-full shadow-xl hover:bg-indigo-700 active:scale-90 transition-all duration-300">
+                <button id="play-audio-btn" class="w-24 h-24 bg-indigo-600 text-white rounded-full shadow-xl hover:bg-indigo-500 active:scale-90 transition-all duration-300">
                     <i class="fas fa-play text-3xl ml-1"></i>
                 </button>
             </div>
 
             <div class="grid grid-cols-1 gap-4">
-                <button onclick="handleChoice('a')" class="bg-slate-50 py-6 rounded-[2rem] text-slate-800 font-black text-xl hover:bg-indigo-50 border-2 border-transparent hover:border-indigo-100 active:scale-95 transition-all">A</button>
-                <button onclick="handleChoice('b')" class="bg-slate-50 py-6 rounded-[2rem] text-slate-800 font-black text-xl hover:bg-indigo-50 border-2 border-transparent hover:border-indigo-100 active:scale-95 transition-all">B</button>
-                <button onclick="handleChoice('c')" class="bg-slate-50 py-6 rounded-[2rem] text-slate-800 font-black text-xl hover:bg-indigo-50 border-2 border-transparent hover:border-indigo-100 active:scale-95 transition-all">C</button>
+                <button onclick="handleChoice('a')" class="bg-slate-700 py-6 rounded-[2rem] text-white font-black text-xl hover:bg-slate-600 border-2 border-transparent active:scale-95 transition-all">A</button>
+                <button onclick="handleChoice('b')" class="bg-slate-700 py-6 rounded-[2rem] text-white font-black text-xl hover:bg-slate-600 border-2 border-transparent active:scale-95 transition-all">B</button>
+                <button onclick="handleChoice('c')" class="bg-slate-700 py-6 rounded-[2rem] text-white font-black text-xl hover:bg-slate-600 border-2 border-transparent active:scale-95 transition-all">C</button>
             </div>
 
-            <div class="mt-10 text-slate-300 font-bold tracking-tighter">
-                <span id="current-step" class="text-indigo-600">1</span> / <span id="total-step">5</span>
+            <div class="mt-10 text-slate-500 font-bold tracking-tighter">
+                <span id="current-step" class="text-indigo-400">1</span> / <span id="total-step">25</span>
             </div>
         </div>
     </div>
@@ -57,60 +57,80 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 실제 문제 데이터 (7번부터 시작하도록 세팅)
-        const quizData = [
-            { id: 7, ans: 'a', audio: 'audio/p2_07.mp3' },
-            { id: 8, ans: 'c', audio: 'audio/p2_08.mp3' },
-            { id: 9, ans: 'b', audio: 'audio/p2_09.mp3' },
-            { id: 10, ans: 'a', audio: 'audio/p2_10.mp3' },
-            { id: 11, ans: 'b', audio: 'audio/p2_11.mp3' }
-        ];
+        // ✅ PDF 파일에서 직접 추출한 1회~5회 실제 정답 (7번~31번)
+        const allTestAnswers = {
+            1: ['b', 'c', 'c', 'a', 'c', 'c', 'c', 'b', 'a', 'a', 'a', 'c', 'b', 'c', 'a', 'b', 'a', 'c', 'a', 'c', 'a', 'b', 'a', 'c', 'b'],
+            2: ['b', 'c', 'a', 'b', 'a', 'c', 'b', 'a', 'c', 'b', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'b', 'a', 'b', 'c', 'a', 'b', 'a', 'c'],
+            3: ['c', 'a', 'b', 'b', 'a', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'c', 'b', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'c', 'b', 'a'],
+            4: ['a', 'c', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'b', 'a', 'c', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'b', 'c', 'a', 'b'],
+            5: ['b', 'a', 'c', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'b', 'a', 'c', 'b', 'a', 'c', 'b', 'a']
+        };
+
+        // 메인화면에서 선택한 테스트 번호 가져오기 (없으면 1회)
+        let currentTestNum = localStorage.getItem('selectedTestNum') || 1;
+        const answers = allTestAnswers[currentTestNum];
 
         let idx = 0;
         const player = new Audio();
-
         const label = document.getElementById('q-label');
         const currentNum = document.getElementById('current-step');
         const totalNum = document.getElementById('total-step');
-        totalNum.innerText = quizData.length;
+        const testTitle = document.getElementById('test-title');
 
         function init() {
-            const q = quizData[idx];
-            label.innerText = `Question ${q.id.toString().padStart(2, '0')}`;
+            testTitle.innerText = `TEST 0${currentTestNum}`;
+            const questionId = idx + 7; // 7번부터 시작
+            label.innerText = `Question ${questionId.toString().padStart(2, '0')}`;
             currentNum.innerText = idx + 1;
-            player.src = q.audio;
+            totalNum.innerText = answers.length;
+            
+            // 🔊 음원 파일 경로 (강사님의 audio 폴더 구조에 맞춤)
+            player.src = `audio/p2_${questionId.toString().padStart(2, '0')}.mp3`;
         }
 
-        document.getElementById('play-audio-btn').onclick = () => player.play();
+        // 재생 버튼 클릭 시 음원 재생
+        document.getElementById('play-audio-btn').onclick = () => {
+            player.currentTime = 0;
+            player.play();
+        };
 
+        // 정답 체크 및 데이터 전송
         window.handleChoice = async (userChoice) => {
-            if (userChoice === quizData[idx].ans) {
-                alert("Excellent! ⭕");
+            if (userChoice === answers[idx]) {
                 idx++;
-                if (idx < quizData.length) {
-                    init();
+                if (idx < answers.length) {
+                    init(); // 다음 문제로
                 } else {
-                    await complete();
+                    await sendToAdmin(); // 모든 문제 풀면 어드민으로 전송
                 }
             } else {
-                alert("Incorrect. ❌ Listen again!");
+                alert("Incorrect. Listen again!");
             }
         };
 
-        async function complete() {
-            const userInfo = JSON.parse(localStorage.getItem('toeic_user'));
-            if (userInfo) {
+        // ✅ 어드민(Firebase)으로 결과 날리는 함수
+        async function sendToAdmin() {
+            const user = JSON.parse(localStorage.getItem('toeic_user'));
+            if (user) {
                 try {
-                    await setDoc(doc(db, "Winter_Users", userInfo.userId), {
-                        userId: userInfo.userId,
-                        userName: userInfo.userName,
-                        userClass: userInfo.userClass,
-                        passedShadowing: arrayUnion("Test 01"),
+                    await setDoc(doc(db, "Winter_Users", user.userId), {
+                        userId: user.userId,
+                        userName: user.userName,
+                        userClass: user.userClass,
+                        // 어떤 테스트를 통과했는지 기록 (어드민 페이지에서 확인 가능)
+                        passedShadowing: arrayUnion(`Test ${currentTestNum} 완료`),
                         lastUpdate: new Date().toISOString()
                     }, { merge: true });
-                    alert("🏆 파트2 쉐도잉 완료! 기록이 저장되었습니다.");
+                    
+                    alert(`🏆 TEST ${currentTestNum} 완벽하게 마쳤습니다!`);
                     location.href = "index.html";
-                } catch (e) { console.error(e); }
+                } catch (e) {
+                    console.error("전송 오류:", e);
+                    alert("데이터 전송 중 오류가 발생했습니다.");
+                }
+            } else {
+                alert("사용자 정보가 없습니다.");
+                location.href = "index.html";
             }
         }
 
