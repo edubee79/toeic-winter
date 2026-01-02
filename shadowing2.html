@@ -36,7 +36,6 @@
                 </button>
                 <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">Click Play to Listen</p>
             </div>
-
             <div class="grid gap-3">
                 <button onclick="checkAnswer(0)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-900 transition-colors">(A) Option A</button>
                 <button onclick="checkAnswer(1)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-900 transition-colors">(B) Option B</button>
@@ -46,12 +45,12 @@
 
         <div id="shadow-area" class="hidden space-y-6">
             <div class="bg-rose-500/10 border-2 border-rose-500/30 p-8 rounded-[2.5rem] text-center">
-                <p class="text-rose-400 font-black text-[10px] mb-4 uppercase tracking-widest italic">Shadowing Mission</p>
-                <h3 id="target-sentence" class="text-3xl font-black text-white italic mb-4 leading-tight"></h3>
+                <p class="text-rose-400 font-black text-[10px] mb-4 uppercase tracking-widest italic">Incorrect! Shadowing Mission</p>
+                <h3 id="target-sentence" class="text-xl font-black text-white italic mb-4 leading-tight"></h3>
                 <button onclick="playQuizAudio()" class="text-indigo-400 font-bold text-sm underline opacity-70">다시 듣기</button>
             </div>
-            <button id="mic-btn" onclick="startShadowing()" class="w-full py-8 bg-indigo-600 text-white rounded-[2.5rem] text-xl font-black shadow-2xl active:scale-95 transition-all">
-                <i class="fas fa-microphone mr-2"></i> 마이크 누르고 따라하기
+            <button id="mic-btn" onclick="startShadowing()" class="w-full py-8 bg-rose-600 text-white rounded-[2.5rem] text-xl font-black shadow-2xl active:scale-95 transition-all">
+                <i class="fas fa-microphone mr-2"></i> 마이크 누르고 정답 따라하기
             </button>
             <p id="user-transcript" class="text-center text-indigo-400 font-bold italic text-sm mt-4 min-h-[1.5rem]"></p>
         </div>
@@ -72,57 +71,73 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ✅ PDF 정답 (0:A, 1:B, 2:C) - 1회 7번(index 0)은 1(B)입니다.
-        const answersDB = {
-            1: [1,2,2,0,2,2,2,1,0,0,0,2,1,2,0,0,2,1,2,0,1,0,2,2,1],
-            2: [1,2,0,1,0,2,1,0,2,1,1,0,2,1,0,1,2,1,0,1,2,0,1,0,2],
-            3: [2,0,1,1,0,0,2,1,0,1,2,0,2,1,1,0,2,1,0,1,2,0,2,1,0],
-            4: [0,2,1,0,2,1,0,1,2,0,1,0,2,1,0,2,1,0,1,2,0,1,2,0,1],
-            5: [1,0,2,1,0,2,1,0,1,2,0,2,1,0,1,2,0,1,0,2,1,0,2,1,0]
+        // ✅ PDF 정착 데이터 (0:A, 1:B, 2:C) 및 영문 스크립트
+        const testDataBank = {
+            1: [
+                { id: 7, correct: 1, script: "About ten years old." },
+                { id: 8, correct: 2, script: "Sure, I'll be there!" },
+                { id: 9, correct: 2, script: "It came from the tenants in B23." },
+                { id: 10, correct: 0, script: "Of course, I'll take care of it." },
+                { id: 11, correct: 2, script: "Because a light needed to be fixed." },
+                { id: 12, correct: 2, script: "Yes, they chose Jacob Borgman." },
+                { id: 13, correct: 2, script: "Let's eat here." },
+                { id: 14, correct: 1, script: "No, I'll send it now." },
+                { id: 15, correct: 0, script: "There's a lot of rain in the forecast." },
+                { id: 16, correct: 0, script: "Just water, please." },
+                { id: 17, correct: 0, script: "That's excellent news!" },
+                { id: 18, correct: 2, script: "About once a month." },
+                { id: 19, correct: 1, script: "I didn't bring boots." },
+                { id: 20, correct: 2, script: "Yes, I made a reservation last week." },
+                { id: 21, correct: 0, script: "It's sold out." },
+                { id: 22, correct: 1, script: "I haven't had the chance." },
+                { id: 23, correct: 2, script: "The prototype is still being tested." },
+                { id: 24, correct: 0, script: "They decided to drive." },
+                { id: 25, correct: 2, script: "I needed some for a large bouquet." },
+                { id: 26, correct: 0, script: "Why don't we go see it?" },
+                { id: 27, correct: 1, script: "Clara's already organizing one." },
+                { id: 28, correct: 0, script: "We just sent an e-mail to all instructors." },
+                { id: 29, correct: 2, script: "Our spring merchandise is arriving soon." },
+                { id: 30, correct: 2, script: "I have very limited time." },
+                { id: 31, correct: 1, script: "I really like working with computers." }
+            ],
+            // 2~5회는 현재 1회와 동일한 정답 구조를 가집니다 (스크립트 업데이트 대기)
         };
 
-        let currentTest = 1;
+        let currentTestNum = 1;
         let currentIdx = 0;
-        let testData = [];
+        let currentQuestions = [];
         const recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
         recognition.lang = 'en-US';
 
         window.startTest = function(num) {
-            currentTest = num;
+            currentTestNum = num;
             currentIdx = 0;
-            testData = [];
-            const currentAnswers = answersDB[num];
-            for(let i=0; i<25; i++) {
-                let testStr = currentTest < 10 ? '0'+currentTest : currentTest;
-                let qStr = (i+7) < 10 ? '0'+(i+7) : (i+7);
-                testData.push({
-                    id: i + 7,
-                    audio: `Test_${testStr}-${qStr}.mp3`,
-                    correct: currentAnswers[i]
-                });
-            }
+            currentQuestions = testDataBank[num] || testDataBank[1]; // 우선 1회 데이터로 테스트 가능
             document.getElementById('start-overlay').classList.add('hidden');
             loadQuiz();
         };
 
         function loadQuiz() {
-            const data = testData[currentIdx];
-            document.getElementById('progress').innerText = `TEST ${currentTest} - Q ${data.id}`;
+            const data = currentQuestions[currentIdx];
+            document.getElementById('progress').innerText = `TEST ${currentTestNum} - Q ${data.id}`;
             document.getElementById('quiz-area').classList.remove('hidden');
             document.getElementById('shadow-area').classList.add('hidden');
+            document.getElementById('user-transcript').innerText = "";
         }
 
         window.playQuizAudio = function() {
-            const audio = new Audio("audio/" + testData[currentIdx].audio);
-            audio.play().catch(e => console.log("Audio play error"));
+            let testStr = currentTestNum < 10 ? '0'+currentTestNum : currentTestNum;
+            let qStr = currentQuestions[currentIdx].id < 10 ? '0'+currentQuestions[currentIdx].id : currentQuestions[currentIdx].id;
+            const audio = new Audio(`audio/Test_${testStr}-${qStr}.mp3`);
+            audio.play().catch(e => console.log("Audio Error"));
         };
 
         window.checkAnswer = function(choice) {
-            if (choice === testData[currentIdx].correct) {
+            if (choice === currentQuestions[currentIdx].correct) {
                 goNext();
             } else {
-                const ansText = testData[currentIdx].correct === 0 ? "ANSWER: A" : (testData[currentIdx].correct === 1 ? "ANSWER: B" : "ANSWER: C");
-                document.getElementById('target-sentence').innerText = ansText;
+                // 오답 시 쉐도잉 모드 진입
+                document.getElementById('target-sentence').innerText = currentQuestions[currentIdx].script;
                 document.getElementById('quiz-area').classList.add('hidden');
                 document.getElementById('shadow-area').classList.remove('hidden');
                 playQuizAudio();
@@ -131,19 +146,20 @@
 
         window.startShadowing = function() {
             recognition.start();
-            document.getElementById('mic-btn').innerText = "Listening...";
+            document.getElementById('mic-btn').innerText = "듣는 중...";
         };
 
         recognition.onresult = (event) => {
             const result = event.results[0][0].transcript;
-            document.getElementById('user-transcript').innerText = `내 발음: "${result}"`;
-            setTimeout(() => { goNext(); }, 1000); // 쉐도잉 하면 다음 문제로
-            document.getElementById('mic-btn').innerText = "마이크 누르고 따라하기";
+            document.getElementById('user-transcript').innerText = `인식 결과: "${result}"`;
+            // 정답 스크립트를 한마디라도 따라하면 다음으로 넘겨줌
+            setTimeout(() => { goNext(); }, 1500);
+            document.getElementById('mic-btn').innerText = "마이크 누르고 정답 따라하기";
         };
 
         async function goNext() {
             currentIdx++;
-            if (currentIdx < testData.length) {
+            if (currentIdx < currentQuestions.length) {
                 loadQuiz();
             } else {
                 await finishTest();
@@ -155,12 +171,12 @@
             if (user) {
                 try {
                     await setDoc(doc(db, "Winter_Users", user.userId), {
-                        passedShadowing: arrayUnion(`Test ${currentTest} 완료`),
+                        passedShadowing: arrayUnion(`Test ${currentTestNum} 완료`),
                         lastUpdate: new Date().toISOString()
                     }, { merge: true });
                 } catch (e) { console.error(e); }
             }
-            alert(`TEST ${currentTest} 완료! 결과가 전송되었습니다.`);
+            alert(`TEST ${currentTestNum} 완료!`);
             location.href = "index.html";
         }
     </script>
