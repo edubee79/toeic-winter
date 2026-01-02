@@ -3,142 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 방학특강 숙제센터</title>
+    <title>TOEIC Part 2 실전 훈련</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        body { font-family: 'Pretendard', sans-serif; }
-        .day-btn { -webkit-tap-highlight-color: transparent; cursor: pointer; }
-    </style>
+    <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-900 text-white min-h-screen">
 
-    <div id="login-modal" class="fixed inset-0 z-[100] bg-slate-900/90 flex items-center justify-center p-6 hidden">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h2 class="text-2xl font-black text-slate-800 mb-2">학생 정보 입력</h2>
-            <p class="text-sm text-slate-400 mb-8 font-bold">숙제 기록 저장을 위해 정보를 입력해주세요.</p>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-black text-slate-400 mb-2 uppercase">수강반 선택</label>
-                    <select id="user-class" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none text-slate-900">
-                        <option value="토익 650">토익 650반</option>
-                        <option value="토익 780">토익 780반</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-black text-slate-400 mb-2 uppercase">학번</label>
-                    <input type="text" id="user-id" placeholder="20240001" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none text-slate-900">
-                </div>
-                <div>
-                    <label class="block text-xs font-black text-slate-400 mb-2 uppercase">이름</label>
-                    <input type="text" id="user-name" placeholder="홍길동" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none text-slate-900">
-                </div>
-                <button id="save-user-btn" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl active:bg-indigo-700">학습 시작하기</button>
-            </div>
+    <div id="start-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
+        <h2 class="text-3xl font-black mb-2 tracking-tighter text-indigo-400">LC Part 2 훈련</h2>
+        <p class="text-slate-400 mb-8 font-bold text-sm">학습할 TEST를 선택하세요.</p>
+        <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
+            <button onclick="startTest(1)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 1</button>
+            <button onclick="startTest(2)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 2</button>
+            <button onclick="startTest(3)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 3</button>
+            <button onclick="startTest(4)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 4</button>
+            <button onclick="startTest(5)" class="py-4 bg-indigo-600 rounded-2xl font-black col-span-2 active:scale-95 transition-all">TEST 5 시작하기</button>
         </div>
     </div>
 
-    <nav class="bg-indigo-700 text-white p-6 shadow-lg">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black italic tracking-tighter">WINTER CAMP</h1>
-            <div id="user-tag" class="text-xs bg-white/20 px-3 py-1 rounded-full cursor-pointer">정보 수정</div>
-        </div>
+    <nav class="p-6 flex justify-between items-center max-w-md mx-auto">
+        <button onclick="location.reload()"><i class="fas fa-home text-slate-400 text-xl"></i></button>
+        <span id="progress" class="font-black text-indigo-400 text-lg uppercase tracking-widest">READY</span>
+        <div class="w-4"></div>
     </nav>
 
-    <main class="max-w-md mx-auto p-6 space-y-6">
-        <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 text-center">
-            <h2 id="welcome-msg" class="text-2xl font-black text-slate-800 mb-1">열공하세요!</h2>
-            <p id="class-tag" class="text-indigo-600 font-bold text-sm"></p>
-        </div>
-
-        <div class="bg-white p-6 rounded-[2.5rem] shadow-md border-b-4 border-indigo-200">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-book"></i></div>
-                <div>
-                    <h3 class="font-black text-lg text-slate-800 leading-tight">단어 정복</h3>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Day 01-20 Voca Test</p>
-                </div>
+    <main class="max-w-md mx-auto px-6 pb-20">
+        <div id="quiz-area" class="space-y-8">
+            <div class="bg-white rounded-[3rem] p-12 text-center shadow-2xl relative overflow-hidden">
+                <button id="main-play-btn" onclick="playQuizAudio()" class="w-24 h-24 bg-indigo-600 rounded-full text-white text-4xl shadow-xl active:scale-95 flex items-center justify-center mx-auto">
+                    <i class="fas fa-play ml-1"></i>
+                </button>
+                <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">Click Play to Listen</p>
             </div>
-            <a href="voca.html" class="block w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm text-center active:scale-95 transition shadow-lg">단어 학습하러 가기</a>
-        </div>
 
-        <div class="bg-white p-6 rounded-[2.5rem] shadow-md border-b-4 border-emerald-200">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-microphone"></i></div>
-                <div>
-                    <h3 class="font-black text-lg text-slate-800 leading-tight">파트1 쉐도잉</h3>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">3 Days Intense Course</p>
-                </div>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-                <a href="shadowing1.html" onclick="localStorage.setItem('shadow_day', 1);" class="day-btn py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm text-center shadow-md active:scale-95 transition flex flex-col items-center">
-                    <span class="text-[10px] opacity-80">1일차</span>
-                    <span>시작</span>
-                </a>
-                <a href="shadowing1.html" onclick="localStorage.setItem('shadow_day', 2);" class="day-btn py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm text-center shadow-md active:scale-95 transition flex flex-col items-center">
-                    <span class="text-[10px] opacity-80">2일차</span>
-                    <span>중급</span>
-                </a>
-                <a href="shadowing1.html" onclick="localStorage.setItem('shadow_day', 3);" class="day-btn py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm text-center shadow-md active:scale-95 transition flex flex-col items-center">
-                    <span class="text-[10px] opacity-80">3일차</span>
-                    <span>완성</span>
-                </a>
+            <div class="grid gap-3">
+                <button onclick="checkAnswer(0)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-900 transition-colors">(A) Option A</button>
+                <button onclick="checkAnswer(1)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-900 transition-colors">(B) Option B</button>
+                <button onclick="checkAnswer(2)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-900 transition-colors">(C) Option C</button>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-[2.5rem] shadow-md border-b-4 border-indigo-500">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-xl"><i class="fas fa-play-circle"></i></div>
-                <div>
-                    <h3 class="font-black text-lg text-slate-800 leading-tight">파트2 실전 훈련</h3>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Actual Test 1-5 Edition</p>
-                </div>
+        <div id="shadow-area" class="hidden space-y-6">
+            <div class="bg-rose-500/10 border-2 border-rose-500/30 p-8 rounded-[2.5rem] text-center">
+                <p class="text-rose-400 font-black text-[10px] mb-4 uppercase tracking-widest italic">Shadowing Mission</p>
+                <h3 id="target-sentence" class="text-xl font-black text-white italic mb-4 leading-tight"></h3>
+                <button onclick="playShadowVoice()" class="text-indigo-400 font-bold text-sm underline opacity-70">정답 다시 듣기</button>
             </div>
-            <a href="shadowing2.html" class="block w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm text-center active:scale-95 transition shadow-lg">실전 문제 풀기</a>
+            <button id="mic-btn" onclick="startShadowing()" class="w-full py-8 bg-indigo-600 text-white rounded-[2.5rem] text-xl font-black shadow-2xl active:scale-95 transition-all">
+                <i class="fas fa-microphone mr-2"></i> 마이크 누르고 따라하기
+            </button>
+            <p id="user-transcript" class="text-center text-indigo-400 font-bold italic text-sm mt-4 min-h-[1.5rem]"></p>
         </div>
-
-        <a href="admin.html" class="block w-full py-8 text-slate-300 text-xs font-bold text-center hover:text-indigo-600 transition-colors">
-            <i class="fas fa-lock mr-1"></i> 관리자 대시보드
-        </a>
     </main>
 
     <script>
-        function checkLogin() {
-            const userJson = localStorage.getItem('toeic_user');
-            if (!userJson) {
-                document.getElementById('login-modal').classList.remove('hidden');
+        let currentTest = 1;
+        let currentIdx = 0;
+        let testData = [];
+
+        const synth = window.speechSynthesis;
+        const recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+        recognition.lang = 'en-US';
+
+        function startTest(num) {
+            currentTest = num;
+            currentIdx = 0;
+            testData = [];
+            // 7번부터 31번까지 생성
+            for(let i=7; i<=31; i++) {
+                let testStr = currentTest < 10 ? '0'+currentTest : currentTest;
+                let qStr = i < 10 ? '0'+i : i;
+                testData.push({
+                    id: i,
+                    audio: `Test_${testStr}-${qStr}.mp3`,
+                    a: "Checking transcription for Question " + i,
+                    correct: Math.floor(Math.random() * 3) // 테스트용 임시 정답
+                });
+            }
+            synth.speak(new SpeechSynthesisUtterance(" ")); // 오디오 잠금 해제
+            document.getElementById('start-overlay').classList.add('hidden');
+            loadQuiz();
+        }
+
+        function loadQuiz() {
+            const data = testData[currentIdx];
+            document.getElementById('progress').innerText = `TEST ${currentTest} - Q ${data.id}`;
+            document.getElementById('quiz-area').classList.remove('hidden');
+            document.getElementById('shadow-area').classList.add('hidden');
+            document.getElementById('user-transcript').innerText = "";
+        }
+
+        function playQuizAudio() {
+            const fileName = testData[currentIdx].audio;
+            // 상대 경로 "audio/파일명"으로 설정 (인터넷/로컬 모두 대응)
+            const audio = new Audio("audio/" + fileName);
+            
+            audio.play().catch(e => {
+                alert("음원을 찾을 수 없습니다.\n파일명: " + fileName + "\n\n경로를 다시 확인해주세요!");
+            });
+        }
+
+        function checkAnswer(choice) {
+            if (choice === testData[currentIdx].correct) {
+                alert("정답입니다!");
+                goNext();
             } else {
-                const user = JSON.parse(userJson);
-                document.getElementById('login-modal').classList.add('hidden');
-                document.getElementById('welcome-msg').textContent = user.userName + "님, 환영합니다!";
-                document.getElementById('class-tag').textContent = user.userClass + " | 학번: " + user.userId;
-                document.getElementById('user-tag').textContent = user.userName + "님";
+                startShadowMode();
             }
         }
 
-        document.getElementById('save-user-btn').addEventListener('click', function() {
-            const userClass = document.getElementById('user-class').value;
-            const userId = document.getElementById('user-id').value;
-            const userName = document.getElementById('user-name').value;
-            
-            if(!userId || !userName) { 
-                alert("학번과 이름을 입력해주세요."); 
-                return; 
-            }
-            
-            localStorage.setItem('toeic_user', JSON.stringify({ userClass: userClass, userId: userId, userName: userName }));
-            checkLogin();
-        });
+        function startShadowMode() {
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('shadow-area').classList.remove('hidden');
+            document.getElementById('target-sentence').innerText = testData[currentIdx].a;
+            playShadowVoice();
+        }
 
-        document.getElementById('user-tag').addEventListener('click', function() {
-            if(confirm("정보를 수정하시겠습니까?")) { 
-                localStorage.removeItem('toeic_user'); 
-                checkLogin(); 
-            } 
-        });
+        function playShadowVoice() {
+            const ut = new SpeechSynthesisUtterance(testData[currentIdx].a);
+            ut.lang = 'en-US';
+            synth.speak(ut);
+        }
 
-        window.onload = checkLogin;
+        function startShadowing() {
+            recognition.start();
+            document.getElementById('mic-btn').innerText = "듣는 중...";
+        }
+
+        recognition.onresult = (event) => {
+            const result = event.results[0][0].transcript;
+            document.getElementById('user-transcript').innerText = `내 발음: "${result}"`;
+            setTimeout(() => { alert("Mission Clear!"); goNext(); }, 800);
+            document.getElementById('mic-btn').innerText = "마이크 누르고 따라하기";
+        };
+
+        function goNext() {
+            currentIdx++;
+            if (currentIdx < testData.length) loadQuiz();
+            else alert("해당 TEST 완료!");
+        }
     </script>
 </body>
 </html>
