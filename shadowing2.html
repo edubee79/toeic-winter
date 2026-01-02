@@ -12,7 +12,7 @@
 
     <div id="start-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
         <h2 class="text-3xl font-black mb-2 tracking-tighter text-indigo-400">LC Part 2 실전</h2>
-        <p class="text-slate-400 mb-8 font-bold text-sm">틀리면 음원이 처음부터 다시 재생됩니다.</p>
+        <p class="text-slate-400 mb-8 font-bold text-sm">틀리면 정답 스크립트를 보여주고 다시 들려줍니다.</p>
         <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
             <button onclick="startTest(1)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 1</button>
             <button onclick="startTest(2)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 2</button>
@@ -29,9 +29,15 @@
 
     <main class="max-w-md mx-auto px-6 pb-20">
         <div id="quiz-container" class="space-y-8">
-            <div id="audio-card" class="bg-white rounded-[3rem] p-12 text-center shadow-2xl relative overflow-hidden transition-colors duration-300">
+            <div id="audio-card" class="bg-white rounded-[3rem] p-10 text-center shadow-2xl relative overflow-hidden transition-all duration-300">
                 <div id="playback-wave" class="absolute inset-x-0 bottom-0 h-1 bg-indigo-100 origin-left scale-x-0 transition-transform duration-100"></div>
-                <button id="play-btn" onclick="handlePlay()" class="w-24 h-24 bg-indigo-600 rounded-full text-white text-4xl shadow-xl active:scale-95 flex items-center justify-center mx-auto transition-all">
+                
+                <div id="script-box" class="hidden mb-6 animate-bounce">
+                    <p class="text-rose-500 font-black text-[10px] uppercase tracking-widest mb-1">Check the Script</p>
+                    <h3 id="correct-script" class="text-slate-800 text-lg font-black italic leading-tight"></h3>
+                </div>
+
+                <button id="play-btn" onclick="handlePlay()" class="w-20 h-20 bg-indigo-600 rounded-full text-white text-3xl shadow-xl active:scale-95 flex items-center justify-center mx-auto transition-all">
                     <i class="fas fa-play ml-1"></i>
                 </button>
                 <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">Listen & Select</p>
@@ -59,14 +65,34 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ✅ 정답 스크립트 데이터 (실제 데이터에 맞게 추가)
         const testBank = {
             1: [
-                { id: 7, correct: 1 }, { id: 8, correct: 2 }, { id: 9, correct: 2 }, { id: 10, correct: 0 },
-                { id: 11, correct: 2 }, { id: 12, correct: 2 }, { id: 13, correct: 2 }, { id: 14, correct: 1 },
-                { id: 15, correct: 0 }, { id: 16, correct: 0 }, { id: 17, correct: 0 }, { id: 18, correct: 2 },
-                { id: 19, correct: 1 }, { id: 20, correct: 2 }, { id: 21, correct: 0 }, { id: 22, correct: 1 },
-                { id: 23, correct: 2 }, { id: 24, correct: 0 }, { id: 25, correct: 2 }, { id: 26, correct: 0 },
-                { id: 27, correct: 1 }, { id: 28, correct: 0 }, { id: 29, correct: 2 }, { id: 30, correct: 2 }, { id: 31, correct: 1 }
+                { id: 7, correct: 1, script: "About ten years old." },
+                { id: 8, correct: 2, script: "Sure, I'll be there!" },
+                { id: 9, correct: 2, script: "It came from the tenants in B23." },
+                { id: 10, correct: 0, script: "Of course, I'll take care of it." },
+                { id: 11, correct: 2, script: "Because a light needed to be fixed." },
+                { id: 12, correct: 2, script: "Yes, they chose Jacob Borgman." },
+                { id: 13, correct: 2, script: "Let's eat here." },
+                { id: 14, correct: 1, script: "No, I'll send it now." },
+                { id: 15, correct: 0, script: "There's a lot of rain in the forecast." },
+                { id: 16, correct: 0, script: "Just water, please." },
+                { id: 17, correct: 0, script: "That's excellent news!" },
+                { id: 18, correct: 2, script: "About once a month." },
+                { id: 19, correct: 1, script: "I didn't bring boots." },
+                { id: 20, correct: 2, script: "Yes, I made a reservation last week." },
+                { id: 21, correct: 0, script: "It's sold out." },
+                { id: 22, correct: 1, script: "I haven't had the chance." },
+                { id: 23, correct: 2, script: "The prototype is still being tested." },
+                { id: 24, correct: 0, script: "They decided to drive." },
+                { id: 25, correct: 2, script: "I needed some for a large bouquet." },
+                { id: 26, correct: 0, script: "Why don't we go see it?" },
+                { id: 27, correct: 1, script: "Clara's already organizing one." },
+                { id: 28, correct: 0, script: "We just sent an e-mail to all instructors." },
+                { id: 29, correct: 2, script: "Our spring merchandise is arriving soon." },
+                { id: 30, correct: 2, script: "I have very limited time." },
+                { id: 31, correct: 1, script: "I really like working with computers." }
             ]
         };
 
@@ -98,17 +124,19 @@
             document.getElementById('play-btn').innerHTML = '<i class="fas fa-play ml-1"></i>';
             document.getElementById('audio-status').innerText = "Click Play";
             document.getElementById('playback-wave').style.transform = 'scaleX(0)';
-            document.getElementById('audio-card').classList.replace('bg-rose-100', 'bg-white');
+            
+            // 상태 초기화
+            document.getElementById('audio-card').classList.remove('bg-rose-50');
+            document.getElementById('script-box').classList.add('hidden');
             
             audio.src = `audio/Test_${currentTestNum.toString().padStart(2,'0')}-${data.id.toString().padStart(2,'0')}.mp3`;
         }
 
         window.handlePlay = function() {
-            audio.currentTime = 0; // 항상 처음부터 재생
+            audio.currentTime = 0;
             audio.play();
             document.getElementById('play-btn').innerHTML = '<i class="fas fa-volume-up"></i>';
             document.getElementById('audio-status').innerText = "Playing...";
-            document.getElementById('audio-card').classList.replace('bg-rose-100', 'bg-white');
 
             audio.ontimeupdate = () => {
                 const progress = audio.currentTime / audio.duration;
@@ -126,30 +154,31 @@
             const data = list[currentIdx];
 
             if (choice === data.correct) {
-                // 정답일 때: 음성 끄고 다음 문제로
                 audio.pause();
                 if (isReviewMode) {
                     wrongQueue.splice(currentIdx, 1);
                 } else {
                     currentIdx++;
                 }
-                
-                // 리스트 끝 확인
                 checkNavigation(list);
             } else {
-                // 틀렸을 때: 음성 멈추고 즉시 처음부터 다시 재생
+                // ❌ 틀렸을 때 로직
                 audio.pause();
-                document.getElementById('audio-card').classList.replace('bg-white', 'bg-rose-100'); // 틀림 시각화
-                document.getElementById('audio-status').innerText = "Wrong! Listen Again";
                 
-                // 틀린 문제 리스트에 추가 (본 테스트일 때만)
+                // 시각적 효과 (스크립트 보여주기 & 배경 강조)
+                document.getElementById('audio-card').classList.add('bg-rose-50');
+                document.getElementById('correct-script').innerText = data.script;
+                document.getElementById('script-box').classList.remove('hidden');
+                document.getElementById('audio-status').innerText = "Wrong! Watch Script & Listen Again";
+                
                 if (!isReviewMode) {
                     if(!wrongQueue.find(i => i.id === data.id)) wrongQueue.push(data);
                 }
                 
+                // 틀린 문제는 다시 처음부터 들려줌
                 setTimeout(() => {
-                    handlePlay(); // 강제로 다시 들려줌
-                }, 300);
+                    handlePlay();
+                }, 500);
             }
         };
 
@@ -192,7 +221,7 @@
                     lastUpdate: new Date().toISOString()
                 }, { merge: true });
             }
-            alert(`🏆 모든 학습과 오답 정리를 마쳤습니다!`);
+            alert(`🏆 고생하셨습니다! 오답 정리를 모두 마쳤습니다.`);
             location.href = "index.html";
         }
     </script>
