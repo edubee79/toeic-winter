@@ -47,8 +47,8 @@
         <div id="shadow-area" class="hidden space-y-6">
             <div class="bg-rose-500/10 border-2 border-rose-500/30 p-8 rounded-[2.5rem] text-center">
                 <p class="text-rose-400 font-black text-[10px] mb-4 uppercase tracking-widest italic">Shadowing Mission</p>
-                <h3 id="target-sentence" class="text-xl font-black text-white italic mb-4 leading-tight"></h3>
-                <button onclick="playShadowVoice()" class="text-indigo-400 font-bold text-sm underline opacity-70">정답 다시 듣기</button>
+                <h3 id="target-sentence" class="text-xl font-black text-white italic mb-4 leading-tight">Incorrect! Listen again and repeat.</h3>
+                <button onclick="playQuizAudio()" class="text-indigo-400 font-bold text-sm underline opacity-70">다시 듣기</button>
             </div>
             <button id="mic-btn" onclick="startShadowing()" class="w-full py-8 bg-indigo-600 text-white rounded-[2.5rem] text-xl font-black shadow-2xl active:scale-95 transition-all">
                 <i class="fas fa-microphone mr-2"></i> 마이크 누르고 따라하기
@@ -57,34 +57,55 @@
         </div>
     </main>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8",
+            authDomain: "eduthot-fb088.firebaseapp.com",
+            projectId: "eduthot-fb088",
+            storageBucket: "eduthot-fb088.firebasestorage.app",
+            messagingSenderId: "919552710378",
+            appId: "1:919552710378:web:7ba72ea2d195e092f8a993"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         let currentTest = 1;
         let currentIdx = 0;
         let testData = [];
 
-        const synth = window.speechSynthesis;
+        // ✅ PDF 정답 데이터 (0:A, 1:B, 2:C)
+        const answersDB = {
+            1: [1,2,2,0,2,2,2,1,0,0,0,2,1,2,0,1,0,2,0,2,0,1,0,2,1],
+            2: [1,0,2,2,1,1,0,2,1,1,0,2,2,0,1,0,2,1,0,2,1,0,1,2,1],
+            3: [0,2,1,1,0,1,2,1,0,2,0,1,1,2,0,1,2,0,1,0,2,1,0,2,0],
+            4: [1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1,2,0,1],
+            5: [2,0,1,2,0,1,1,0,2,0,1,2,0,1,0,2,1,0,2,1,0,1,2,0,1]
+        };
+
         const recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
         recognition.lang = 'en-US';
 
-        function startTest(num) {
+        window.startTest = function(num) {
             currentTest = num;
             currentIdx = 0;
             testData = [];
-            // 7번부터 31번까지 생성
-            for(let i=7; i<=31; i++) {
+            const currentAnswers = answersDB[num];
+
+            for(let i=0; i<25; i++) {
                 let testStr = currentTest < 10 ? '0'+currentTest : currentTest;
-                let qStr = i < 10 ? '0'+i : i;
+                let qStr = (i+7) < 10 ? '0'+(i+7) : (i+7);
                 testData.push({
-                    id: i,
+                    id: i + 7,
                     audio: `Test_${testStr}-${qStr}.mp3`,
-                    a: "Checking transcription for Question " + i,
-                    correct: Math.floor(Math.random() * 3) // 테스트용 임시 정답
+                    correct: currentAnswers[i]
                 });
             }
-            synth.speak(new SpeechSynthesisUtterance(" ")); // 오디오 잠금 해제
             document.getElementById('start-overlay').classList.add('hidden');
             loadQuiz();
-        }
+        };
 
         function loadQuiz() {
             const data = testData[currentIdx];
@@ -94,54 +115,60 @@
             document.getElementById('user-transcript').innerText = "";
         }
 
-        function playQuizAudio() {
+        window.playQuizAudio = function() {
             const fileName = testData[currentIdx].audio;
-            // 상대 경로 "audio/파일명"으로 설정 (인터넷/로컬 모두 대응)
             const audio = new Audio("audio/" + fileName);
-            
-            audio.play().catch(e => {
-                alert("음원을 찾을 수 없습니다.\n파일명: " + fileName + "\n\n경로를 다시 확인해주세요!");
-            });
-        }
+            audio.play().catch(e => alert("음원 오류: audio/" + fileName));
+        };
 
-        function checkAnswer(choice) {
+        window.checkAnswer = function(choice) {
             if (choice === testData[currentIdx].correct) {
-                alert("정답입니다!");
                 goNext();
             } else {
                 startShadowMode();
             }
-        }
+        };
 
         function startShadowMode() {
             document.getElementById('quiz-area').classList.add('hidden');
             document.getElementById('shadow-area').classList.remove('hidden');
-            document.getElementById('target-sentence').innerText = testData[currentIdx].a;
-            playShadowVoice();
+            const audio = new Audio("audio/" + testData[currentIdx].audio);
+            audio.play();
         }
 
-        function playShadowVoice() {
-            const ut = new SpeechSynthesisUtterance(testData[currentIdx].a);
-            ut.lang = 'en-US';
-            synth.speak(ut);
-        }
-
-        function startShadowing() {
+        window.startShadowing = function() {
             recognition.start();
             document.getElementById('mic-btn').innerText = "듣는 중...";
-        }
+        };
 
         recognition.onresult = (event) => {
             const result = event.results[0][0].transcript;
             document.getElementById('user-transcript').innerText = `내 발음: "${result}"`;
-            setTimeout(() => { alert("Mission Clear!"); goNext(); }, 800);
+            setTimeout(() => { goNext(); }, 1000);
             document.getElementById('mic-btn').innerText = "마이크 누르고 따라하기";
         };
 
-        function goNext() {
+        async function goNext() {
             currentIdx++;
-            if (currentIdx < testData.length) loadQuiz();
-            else alert("해당 TEST 완료!");
+            if (currentIdx < testData.length) {
+                loadQuiz();
+            } else {
+                await finishTest();
+            }
+        }
+
+        async function finishTest() {
+            const user = JSON.parse(localStorage.getItem('toeic_user'));
+            if (user) {
+                try {
+                    await setDoc(doc(db, "Winter_Users", user.userId), {
+                        passedShadowing: arrayUnion(`Test ${currentTest} 완료`),
+                        lastUpdate: new Date().toISOString()
+                    }, { merge: true });
+                } catch (e) { console.error(e); }
+            }
+            alert(`TEST ${currentTest} 완료!`);
+            location.href = "index.html";
         }
     </script>
 </body>
