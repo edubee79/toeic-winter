@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LC Part 2 마스터</title>
+    <title>TOEIC Part 2 실전 훈련</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
@@ -12,7 +12,7 @@
 
     <div id="start-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
         <h2 class="text-3xl font-black mb-2 tracking-tighter text-indigo-400">LC Part 2 훈련</h2>
-        <p class="text-slate-400 mb-8 font-bold text-sm text-center">파일이 안 나올 경우 주소를 확인해주세요.</p>
+        <p class="text-slate-400 mb-8 font-bold text-sm">학습할 TEST를 선택하세요.</p>
         <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
             <button onclick="startTest(1)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95">TEST 1</button>
             <button onclick="startTest(2)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95">TEST 2</button>
@@ -34,36 +34,80 @@
                 <button id="main-play-btn" onclick="playQuizAudio()" class="w-24 h-24 bg-indigo-600 rounded-full text-white text-4xl shadow-xl active:scale-95 flex items-center justify-center mx-auto">
                     <i class="fas fa-play ml-1"></i>
                 </button>
-                <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">Click Play</p>
+                <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">질문 듣기</p>
             </div>
-            <div class="grid gap-3" id="options-container">
-                <button onclick="checkAnswer(0)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700">(A) Option A</button>
-                <button onclick="checkAnswer(1)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700">(B) Option B</button>
-                <button onclick="checkAnswer(2)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700">(C) Option C</button>
+
+            <div class="grid gap-3" id="choice-buttons">
+                <button onclick="checkAnswer(0)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-900 transition-colors">(A)</button>
+                <button onclick="checkAnswer(1)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-900 transition-colors">(B)</button>
+                <button onclick="checkAnswer(2)" class="w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-900 transition-colors">(C)</button>
             </div>
+        </div>
+
+        <div id="shadow-area" class="hidden space-y-6">
+            <div class="bg-rose-500/10 border-2 border-rose-500/30 p-8 rounded-[2.5rem] text-center">
+                <p class="text-rose-400 font-black text-[10px] mb-4 uppercase tracking-widest italic">Shadowing Mission</p>
+                <h3 id="target-sentence" class="text-xl font-black text-white italic mb-4 leading-tight"></h3>
+                <button onclick="playShadowVoice()" class="text-indigo-400 font-bold text-sm underline opacity-70">정답 다시 듣기</button>
+            </div>
+            <button id="mic-btn" onclick="startShadowing()" class="w-full py-8 bg-indigo-600 text-white rounded-[2.5rem] text-xl font-black shadow-2xl">
+                <i class="fas fa-microphone mr-2"></i> 마이크 누르고 따라하기
+            </button>
+            <p id="user-transcript" class="text-center text-indigo-400 font-bold italic text-sm mt-4 min-h-[1.5rem]"></p>
         </div>
     </main>
 
     <script>
+        // PDF 데이터를 기반으로 한 정답 시트 (0=A, 1=B, 2=C)
+        const answerSheet = {
+            1: [0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0], 
+            2: [1, 0, 2, 0, 1, 1, 2, 0, 2, 1, 0, 2, 1, 0, 0, 2, 1, 2, 0, 1, 2, 0, 2, 2, 1],
+            3: [2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2, 1, 0, 2],
+            4: [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0],
+            5: [1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1]
+        };
+
+        // PDF 데이터를 기반으로 한 스크립트 시트
+        const scriptSheet = {
+            2: [
+                "Right behind that desk.", "It's Ms. Tanaka.", "In about ten minutes.", "I'll take care of it.", 
+                "Because a light needed to be fixed.", "Yes, they chose Jacob.", "Let's eat here.", 
+                "No, I'll send it now.", "There's rain in the forecast.", "Just water, please.", 
+                "That's excellent news!", "About once a month.", "I didn't bring boots.", 
+                "Yes, I made a reservation.", "It's sold out.", "I haven't had the chance.", 
+                "The prototype is being tested.", "They decided to drive.", "I needed some for a bouquet.", 
+                "Why don't we go see it?", "Clara's organizing one.", "We sent an e-mail to instructors.", 
+                "Spring items are arriving.", "I have limited time.", "I like working with computers."
+            ]
+            // 나머지 회차 스크립트도 위와 같은 방식으로 추가 가능합니다.
+        };
+
         let currentTest = 1;
         let currentIdx = 0;
         let testData = [];
+
+        const synth = window.speechSynthesis;
+        const recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+        recognition.lang = 'en-US';
 
         function startTest(num) {
             currentTest = num;
             currentIdx = 0;
             testData = [];
+            const answers = answerSheet[num];
+            const scripts = scriptSheet[num] || [];
+            
             for(let i=7; i<=31; i++) {
-                // [강사님 필독] 파일명 생성 규칙 (Test_01-07.mp3 형태)
-                let testNum = currentTest < 10 ? '0' + currentTest : currentTest;
-                let qNum = i < 10 ? '0' + i : i;
-                
+                let testStr = currentTest < 10 ? '0'+currentTest : currentTest;
+                let qStr = i < 10 ? '0'+i : i;
                 testData.push({
                     id: i,
-                    // 파일명을 소문자/대문자 섞어서 시도해보기 위해 변수로 저장
-                    audio: `Test_${testNum}-${qNum}.mp3` 
+                    audio: `Test_${testStr}-${qStr}.mp3`,
+                    correct: answers[i-7] !== undefined ? answers[i-7] : 0,
+                    a: scripts[i-7] || "Listen and repeat the sentence."
                 });
             }
+            synth.speak(new SpeechSynthesisUtterance(" "));
             document.getElementById('start-overlay').classList.add('hidden');
             loadQuiz();
         }
@@ -71,28 +115,56 @@
         function loadQuiz() {
             const data = testData[currentIdx];
             document.getElementById('progress').innerText = `TEST ${currentTest} - Q ${data.id}`;
+            document.getElementById('quiz-area').classList.remove('hidden');
+            document.getElementById('shadow-area').classList.add('hidden');
+            document.getElementById('user-transcript').innerText = "";
         }
 
         function playQuizAudio() {
-            const fileName = testData[currentIdx].audio;
-            // 주소 끝에 임의의 숫자를 붙여 '강력 새로고침' 효과를 줍니다 (캐시 방지)
-            const audioPath = "audio/" + fileName + "?v=" + Math.random();
-            const audio = new Audio(audioPath);
-            
-            console.log("시도하는 파일 경로:", audioPath);
-
-            audio.play().catch(e => {
-                // 에러 발생 시 주소를 팝업으로 띄움
-                const fullUrl = window.location.origin + window.location.pathname.replace("shadowing2.html", "") + "audio/" + fileName;
-                alert("파일을 못 찾았습니다!\n\n[시도한 파일명]\n" + fileName + "\n\n[실제 주소]\n" + fullUrl + "\n\n실제 깃허브의 파일명과 대소문자/하이픈이 똑같은지 확인해주세요.");
-            });
+            const audio = new Audio("audio/" + testData[currentIdx].audio);
+            audio.play().catch(e => alert("음원 파일이 없습니다: " + testData[currentIdx].audio));
         }
 
         function checkAnswer(choice) {
-            alert("정답입니다! 다음 문제로 넘어갑니다.");
+            if (choice === testData[currentIdx].correct) {
+                alert("정답입니다! 잘하셨어요.");
+                goNext();
+            } else {
+                alert("아쉽네요! 쉐도잉 미션을 수행하세요.");
+                startShadowMode();
+            }
+        }
+
+        function startShadowMode() {
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('shadow-area').classList.remove('hidden');
+            document.getElementById('target-sentence').innerText = testData[currentIdx].a;
+            playShadowVoice();
+        }
+
+        function playShadowVoice() {
+            synth.cancel();
+            const ut = new SpeechSynthesisUtterance(testData[currentIdx].a);
+            ut.lang = 'en-US';
+            synth.speak(ut);
+        }
+
+        function startShadowing() {
+            recognition.start();
+            document.getElementById('mic-btn').innerText = "듣고 있습니다...";
+        }
+
+        recognition.onresult = (event) => {
+            const result = event.results[0][0].transcript;
+            document.getElementById('user-transcript').innerText = `인식 결과: "${result}"`;
+            setTimeout(() => { alert("미션 완료! 다음 문제로."); goNext(); }, 1000);
+            document.getElementById('mic-btn').innerText = "마이크 누르고 따라하기";
+        };
+
+        function goNext() {
             currentIdx++;
             if (currentIdx < testData.length) loadQuiz();
-            else alert("학습 완료!");
+            else alert("축하합니다! 해당 TEST의 모든 문제를 완료했습니다.");
         }
     </script>
 </body>

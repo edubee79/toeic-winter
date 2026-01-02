@@ -9,6 +9,7 @@
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         body { font-family: 'Pretendard', sans-serif; }
+        .day-btn { -webkit-tap-highlight-color: transparent; cursor: pointer; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -20,27 +21,27 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-black text-slate-400 mb-2 uppercase">수강반 선택</label>
-                    <select id="user-class" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none">
+                    <select id="user-class" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none text-slate-900">
                         <option value="토익 650">토익 650반</option>
                         <option value="토익 780">토익 780반</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-black text-slate-400 mb-2 uppercase">학번</label>
-                    <input type="text" id="user-id" placeholder="20240001" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none">
+                    <input type="text" id="user-id" placeholder="20240001" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none text-slate-900">
                 </div>
                 <div>
                     <label class="block text-xs font-black text-slate-400 mb-2 uppercase">이름</label>
-                    <input type="text" id="user-name" placeholder="홍길동" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none">
+                    <input type="text" id="user-name" placeholder="홍길동" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold focus:border-indigo-500 outline-none text-slate-900">
                 </div>
-                <button id="start-btn" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 transition-all">학습 시작하기</button>
+                <button id="save-user-btn" class="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl active:bg-indigo-700">학습 시작하기</button>
             </div>
         </div>
     </div>
 
     <nav class="bg-indigo-700 text-white p-6 shadow-lg">
         <div class="max-w-md mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black italic tracking-tighter text-white">WINTER CAMP</h1>
+            <h1 class="text-xl font-black italic tracking-tighter">WINTER CAMP</h1>
             <div id="user-tag" class="text-xs bg-white/20 px-3 py-1 rounded-full cursor-pointer">정보 수정</div>
         </div>
     </nav>
@@ -59,7 +60,7 @@
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Day 01-20 Voca Test</p>
                 </div>
             </div>
-            <button onclick="location.href='voca.html'" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm active:scale-95 transition shadow-lg">단어 학습하러 가기</button>
+            <a href="voca.html" class="block w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm text-center active:scale-95 transition shadow-lg">단어 학습하러 가기</a>
         </div>
 
         <div class="bg-white p-6 rounded-[2.5rem] shadow-md border-b-4 border-emerald-200">
@@ -67,65 +68,71 @@
                 <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-microphone"></i></div>
                 <div>
                     <h3 class="font-black text-lg text-slate-800 leading-tight">파트1 쉐도잉</h3>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">100 Sentences / 3 Days Course</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">3 Days Intense Course</p>
                 </div>
             </div>
             <div class="grid grid-cols-3 gap-2">
-                <button onclick="localStorage.setItem('shadow_day', 1); location.href='shadowing1.html';" class="py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm active:scale-95 transition shadow-md flex flex-col items-center">
+                <a href="shadowing1.html" onclick="localStorage.setItem('shadow_day', 1);" class="day-btn py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm text-center shadow-md active:scale-95 transition flex flex-col items-center">
                     <span class="text-[10px] opacity-80">1일차</span>
                     <span>시작</span>
-                </button>
-                <button onclick="localStorage.setItem('shadow_day', 2); location.href='shadowing1.html';" class="py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm active:scale-95 transition shadow-md flex flex-col items-center">
+                </a>
+                <a href="shadowing1.html" onclick="localStorage.setItem('shadow_day', 2);" class="day-btn py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm text-center shadow-md active:scale-95 transition flex flex-col items-center">
                     <span class="text-[10px] opacity-80">2일차</span>
                     <span>중급</span>
-                </button>
-                <button onclick="localStorage.setItem('shadow_day', 3); location.href='shadowing1.html';" class="py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm active:scale-95 transition shadow-md flex flex-col items-center">
+                </a>
+                <a href="shadowing1.html" onclick="localStorage.setItem('shadow_day', 3);" class="day-btn py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm text-center shadow-md active:scale-95 transition flex flex-col items-center">
                     <span class="text-[10px] opacity-80">3일차</span>
                     <span>완성</span>
-                </button>
+                </a>
             </div>
         </div>
 
-        <button onclick="location.href='admin.html'" class="w-full py-8 text-slate-300 text-xs font-bold hover:text-indigo-600 transition-colors">
+        <div class="bg-white p-6 rounded-[2.5rem] shadow-md border-b-4 border-indigo-500">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-xl"><i class="fas fa-play-circle"></i></div>
+                <div>
+                    <h3 class="font-black text-lg text-slate-800 leading-tight">파트2 실전 훈련</h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Actual Test 1-5 Edition</p>
+                </div>
+            </div>
+            <a href="shadowing2.html" class="block w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm text-center active:scale-95 transition shadow-lg">실전 문제 풀기</a>
+        </div>
+
+        <a href="admin.html" class="block w-full py-8 text-slate-300 text-xs font-bold text-center hover:text-indigo-600 transition-colors">
             <i class="fas fa-lock mr-1"></i> 관리자 대시보드
-        </button>
+        </a>
     </main>
 
     <script>
-        // 로그인 체크 함수
         function checkLogin() {
             const userJson = localStorage.getItem('toeic_user');
-            const modal = document.getElementById('login-modal');
-            
             if (!userJson) {
-                modal.classList.remove('hidden');
+                document.getElementById('login-modal').classList.remove('hidden');
             } else {
                 const user = JSON.parse(userJson);
-                modal.classList.add('hidden');
-                document.getElementById('welcome-msg').textContent = `${user.userName}님, 환영합니다!`;
-                document.getElementById('class-tag').textContent = `${user.userClass} | 학번: ${user.userId}`;
-                document.getElementById('user-tag').textContent = `${user.userName}님`;
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('welcome-msg').textContent = user.userName + "님, 환영합니다!";
+                document.getElementById('class-tag').textContent = user.userClass + " | 학번: " + user.userId;
+                document.getElementById('user-tag').textContent = user.userName + "님";
             }
         }
 
-        // 유저 정보 저장 (이벤트 리스너 방식)
-        document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('save-user-btn').addEventListener('click', function() {
             const userClass = document.getElementById('user-class').value;
             const userId = document.getElementById('user-id').value;
             const userName = document.getElementById('user-name').value;
             
             if(!userId || !userName) { 
-                alert("학번과 이름을 정확히 입력해주세요."); 
+                alert("학번과 이름을 입력해주세요."); 
                 return; 
             }
             
-            localStorage.setItem('toeic_user', JSON.stringify({ userClass, userId, userName }));
+            localStorage.setItem('toeic_user', JSON.stringify({ userClass: userClass, userId: userId, userName: userName }));
             checkLogin();
         });
 
-        // 정보 수정
-        document.getElementById('user-tag').addEventListener('click', () => {
-            if(confirm("이름이나 수강반 정보를 수정하시겠습니까?")) { 
+        document.getElementById('user-tag').addEventListener('click', function() {
+            if(confirm("정보를 수정하시겠습니까?")) { 
                 localStorage.removeItem('toeic_user'); 
                 checkLogin(); 
             } 
