@@ -3,40 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리자 대시보드</title>
+    <title>전체 학습 현황 관리자</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        body { font-family: 'Pretendard', sans-serif; }
-    </style>
+    <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
 </head>
-<body class="bg-slate-50 p-6">
-    <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-black text-slate-800 tracking-tighter">
-                <i class="fas fa-user-shield mr-2 text-indigo-600"></i>학생 학습 현황
-            </h1>
-            <button onclick="location.href='index.html'" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">
-                메인으로 이동
+<body class="bg-slate-900 text-white min-h-screen p-6">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-black text-indigo-400 italic tracking-tighter">TOTAL MONITORING</h1>
+                <p class="text-slate-400 text-sm font-bold">학생들의 전체 학습 현황을 한눈에 확인합니다.</p>
+            </div>
+            <button onclick="location.reload()" class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-all border border-slate-700">
+                <i class="fas fa-sync-alt"></i>
             </button>
         </header>
 
-        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-slate-50 border-b border-slate-100">
-                        <th class="p-4 font-black text-slate-400 text-xs uppercase">반</th>
-                        <th class="p-4 font-black text-slate-400 text-xs uppercase">이름(학번)</th>
-                        <th class="p-4 font-black text-slate-400 text-xs uppercase">단어 통과(Day)</th>
-                        <th class="p-4 font-black text-slate-400 text-xs uppercase">쉐도잉 완료</th>
-                        <th class="p-4 font-black text-slate-400 text-xs uppercase">최근 학습</th>
-                    </tr>
-                </thead>
-                <tbody id="user-list">
-                    <tr><td colspan="5" class="p-10 text-center text-slate-400 font-bold">데이터를 불러오는 중...</td></tr>
-                </tbody>
-            </table>
+        <div class="bg-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-700">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-700/50 text-indigo-300 uppercase text-[10px] tracking-widest font-black">
+                            <th class="px-6 py-5">학생 이름/ID</th>
+                            <th class="px-6 py-5">단어 테스트 (Day)</th>
+                            <th class="px-6 py-5">Part 1 쉐도잉</th>
+                            <th class="px-6 py-5">Part 2 실전</th>
+                            <th class="px-6 py-5 text-right">마지막 업데이트</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list" class="divide-y divide-slate-700">
+                        <tr>
+                            <td colspan="5" class="px-6 py-20 text-center text-slate-500 font-bold italic animate-pulse">데이터 로딩 중...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -44,53 +47,58 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8",
-            authDomain: "eduthot-fb088.firebaseapp.com",
-            projectId: "eduthot-fb088",
-            storageBucket: "eduthot-fb088.firebasestorage.app",
-            messagingSenderId: "919552710378",
-            appId: "1:919552710378:web:7ba72ea2d195e092f8a993"
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", 
+            authDomain: "eduthot-fb088.firebaseapp.com", 
+            projectId: "eduthot-fb088", 
+            storageBucket: "eduthot-fb088.firebasestorage.app", 
+            messagingSenderId: "919552710378", 
+            appId: "1:919552710378:web:7ba72ea2d195e092f8a993" 
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function loadData() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "Winter_Users"));
-                const listContainer = document.getElementById('user-list');
-                listContainer.innerHTML = '';
+        async function fetchAllData() {
+            const querySnapshot = await getDocs(collection(db, "Winter_Users"));
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = "";
 
-                if (querySnapshot.empty) {
-                    listContainer.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400 font-bold">아직 기록이 없습니다.</td></tr>';
-                    return;
-                }
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const vocaDays = data.passedVocaDays ? data.passedVocaDays.sort((a,b)=>a-b).join(', ') : '-';
-                    const shadowing = data.passedShadowing ? data.passedShadowing.join(', ') : '-';
-                    const date = data.lastUpdate ? new Date(data.lastUpdate).toLocaleString('ko-KR') : '-';
-
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-50 hover:bg-slate-50/50 transition-all text-sm";
-                    tr.innerHTML = `
-                        <td class="p-4 font-bold text-slate-500">${data.userClass || '-'}</td>
-                        <td class="p-4 font-black text-slate-800">${data.userName} (${data.userId})</td>
-                        <td class="p-4"><span class="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold">Day ${vocaDays}</span></td>
-                        <td class="p-4"><span class="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-bold">${shadowing}</span></td>
-                        <td class="p-4 text-[10px] text-slate-400 font-medium">${date}</td>
-                    `;
-                    listContainer.appendChild(tr);
-                });
-            } catch (error) {
-                console.error("Error loading data:", error);
-                document.getElementById('user-list').innerHTML = '<tr><td colspan="5" class="p-10 text-center text-red-400 font-bold">데이터를 가져오지 못했습니다.</td></tr>';
+            if (querySnapshot.empty) {
+                userList.innerHTML = '<tr><td colspan="5" class="px-6 py-20 text-center text-slate-500">데이터가 없습니다.</td></tr>';
+                return;
             }
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const userId = doc.id;
+                
+                // 데이터 가공 (없으면 '-' 표시)
+                const voca = data.vocabulary ? data.vocabulary.join(", ") : "-";
+                const part1 = data.passedShadowing ? data.passedShadowing.join(", ") : "-";
+                const part2 = data.completed_part2 ? data.completed_part2.join(", ") : "-";
+                const lastUpdate = data.lastUpdate ? new Date(data.lastUpdate).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : "-";
+
+                const row = `
+                    <tr class="hover:bg-slate-700/30 transition-colors">
+                        <td class="px-6 py-5 font-black text-white text-sm">${userId}</td>
+                        <td class="px-6 py-5">
+                            <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded-lg">${voca}</span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg">${part1}</span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="text-xs font-bold text-indigo-400 bg-indigo-400/10 px-2 py-1 rounded-lg">${part2}</span>
+                        </td>
+                        <td class="px-6 py-5 text-right text-slate-500 text-[10px] font-mono">${lastUpdate}</td>
+                    </tr>
+                `;
+                userList.innerHTML += row;
+            });
         }
 
-        window.onload = loadData;
+        fetchAllData();
     </script>
 </body>
 </html>
