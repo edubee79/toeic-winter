@@ -57,7 +57,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ✅ PDF 정답 대조 완료 (7~31번)
+        // ✅ PDF 정답지 한 문제씩 직접 대조하여 수정 완료
         const allTestAnswers = {
             "1": ['b','c','c','a','c','c','c','b','a','a','a','c','b','c','a','b','a','c','a','c','a','b','a','c','b'],
             "2": ['b','a','c','c','b','b','a','c','b','b','a','c','c','a','b','a','c','b','a','c','b','a','b','c','b'],
@@ -68,28 +68,21 @@
 
         let currentTestNum = localStorage.getItem('selectedTestNum') || "1";
         const answers = allTestAnswers[currentTestNum];
-
         let idx = 0;
         const player = new Audio();
-        
-        const label = document.getElementById('q-label');
-        const currentStepEl = document.getElementById('current-step');
-        const totalStepEl = document.getElementById('total-step');
-        const testTitleEl = document.getElementById('test-title');
 
         function initQuiz() {
-            testTitleEl.innerText = `TEST 0${currentTestNum}`;
             const qNum = idx + 7;
-            label.innerText = `Question ${qNum.toString().padStart(2, '0')}`;
-            currentStepEl.innerText = idx + 1;
-            totalStepEl.innerText = answers.length;
+            document.getElementById('test-title').innerText = `TEST 0${currentTestNum}`;
+            document.getElementById('q-label').innerText = `Question ${qNum.toString().padStart(2, '0')}`;
+            document.getElementById('current-step').innerText = idx + 1;
+            document.getElementById('total-step').innerText = answers.length;
             
-            // 🔊 음원 파일 경로 설정 (가장 안정적이었던 방식)
-            player.src = "audio/p2_" + qNum.toString().padStart(2, '0') + ".mp3";
-            player.load(); // 파일 미리 로드
+            // ✅ 가장 잘 작동했던 방식 그대로 음원 경로 설정
+            player.src = `audio/p2_${qNum.toString().padStart(2, '0')}.mp3`;
         }
 
-        // 재생 버튼: 아까 성공했던 가장 단순한 로직으로 복구
+        // ✅ 음원 재생 로직 (불필요한 코드 제거)
         document.getElementById('play-audio-btn').onclick = () => {
             player.play();
         };
@@ -100,14 +93,14 @@
                 if (idx < answers.length) {
                     initQuiz();
                 } else {
-                    await saveRecord();
+                    await complete();
                 }
             } else {
-                alert("다시 들어보세요! ❌");
+                alert("Incorrect. Listen again!");
             }
         };
 
-        async function saveRecord() {
+        async function complete() {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
             if (user) {
                 try {
