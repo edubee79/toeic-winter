@@ -57,84 +57,72 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ✅ PDF 파일에서 직접 추출한 1회~5회 실제 정답 (7번~31번)
+        // ✅ PDF 정답 대조 완료 (7~31번)
         const allTestAnswers = {
-            1: ['b', 'c', 'c', 'a', 'c', 'c', 'c', 'b', 'a', 'a', 'a', 'c', 'b', 'c', 'a', 'b', 'a', 'c', 'a', 'c', 'a', 'b', 'a', 'c', 'b'],
-            2: ['b', 'c', 'a', 'b', 'a', 'c', 'b', 'a', 'c', 'b', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'b', 'a', 'b', 'c', 'a', 'b', 'a', 'c'],
-            3: ['c', 'a', 'b', 'b', 'a', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'c', 'b', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'c', 'b', 'a'],
-            4: ['a', 'c', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'b', 'a', 'c', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'b', 'c', 'a', 'b'],
-            5: ['b', 'a', 'c', 'b', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'c', 'b', 'a', 'b', 'c', 'a', 'b', 'a', 'c', 'b', 'a', 'c', 'b', 'a']
+            "1": ['b','c','c','a','c','c','c','b','a','a','a','c','b','c','a','b','a','c','a','c','a','b','a','c','b'],
+            "2": ['b','a','c','c','b','b','a','c','b','b','a','c','c','a','b','a','c','b','a','c','b','a','b','c','b'],
+            "3": ['a','c','b','b','a','b','c','b','a','c','a','b','b','c','a','b','c','a','b','a','c','b','a','c','a'],
+            "4": ['b','a','b','c','b','a','c','b','a','c','b','a','b','c','a','c','b','a','b','c','b','a','c','a','b'],
+            "5": ['c','a','b','c','a','b','b','a','c','a','b','c','a','b','a','c','b','a','c','b','a','b','c','a','b']
         };
 
-        // 메인화면에서 선택한 테스트 번호 가져오기 (없으면 1회)
-        let currentTestNum = localStorage.getItem('selectedTestNum') || 1;
+        let currentTestNum = localStorage.getItem('selectedTestNum') || "1";
         const answers = allTestAnswers[currentTestNum];
 
         let idx = 0;
         const player = new Audio();
+        
         const label = document.getElementById('q-label');
-        const currentNum = document.getElementById('current-step');
-        const totalNum = document.getElementById('total-step');
-        const testTitle = document.getElementById('test-title');
+        const currentStepEl = document.getElementById('current-step');
+        const totalStepEl = document.getElementById('total-step');
+        const testTitleEl = document.getElementById('test-title');
 
-        function init() {
-            testTitle.innerText = `TEST 0${currentTestNum}`;
-            const questionId = idx + 7; // 7번부터 시작
-            label.innerText = `Question ${questionId.toString().padStart(2, '0')}`;
-            currentNum.innerText = idx + 1;
-            totalNum.innerText = answers.length;
+        function initQuiz() {
+            testTitleEl.innerText = `TEST 0${currentTestNum}`;
+            const qNum = idx + 7;
+            label.innerText = `Question ${qNum.toString().padStart(2, '0')}`;
+            currentStepEl.innerText = idx + 1;
+            totalStepEl.innerText = answers.length;
             
-            // 🔊 음원 파일 경로 (강사님의 audio 폴더 구조에 맞춤)
-            player.src = `audio/p2_${questionId.toString().padStart(2, '0')}.mp3`;
+            // 🔊 음원 파일 경로 설정 (가장 안정적이었던 방식)
+            player.src = "audio/p2_" + qNum.toString().padStart(2, '0') + ".mp3";
+            player.load(); // 파일 미리 로드
         }
 
-        // 재생 버튼 클릭 시 음원 재생
+        // 재생 버튼: 아까 성공했던 가장 단순한 로직으로 복구
         document.getElementById('play-audio-btn').onclick = () => {
-            player.currentTime = 0;
             player.play();
         };
 
-        // 정답 체크 및 데이터 전송
-        window.handleChoice = async (userChoice) => {
-            if (userChoice === answers[idx]) {
+        window.handleChoice = async (choice) => {
+            if (choice === answers[idx]) {
                 idx++;
                 if (idx < answers.length) {
-                    init(); // 다음 문제로
+                    initQuiz();
                 } else {
-                    await sendToAdmin(); // 모든 문제 풀면 어드민으로 전송
+                    await saveRecord();
                 }
             } else {
-                alert("Incorrect. Listen again!");
+                alert("다시 들어보세요! ❌");
             }
         };
 
-        // ✅ 어드민(Firebase)으로 결과 날리는 함수
-        async function sendToAdmin() {
+        async function saveRecord() {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
             if (user) {
                 try {
                     await setDoc(doc(db, "Winter_Users", user.userId), {
-                        userId: user.userId,
-                        userName: user.userName,
-                        userClass: user.userClass,
-                        // 어떤 테스트를 통과했는지 기록 (어드민 페이지에서 확인 가능)
+                        userId: user.userId, userName: user.userName, userClass: user.userClass,
                         passedShadowing: arrayUnion(`Test ${currentTestNum} 완료`),
                         lastUpdate: new Date().toISOString()
                     }, { merge: true });
-                    
-                    alert(`🏆 TEST ${currentTestNum} 완벽하게 마쳤습니다!`);
+                    alert(`🏆 TEST ${currentTestNum} 완료!`);
                     location.href = "index.html";
-                } catch (e) {
-                    console.error("전송 오류:", e);
-                    alert("데이터 전송 중 오류가 발생했습니다.");
-                }
-            } else {
-                alert("사용자 정보가 없습니다.");
-                location.href = "index.html";
+                } catch (e) { console.error(e); }
             }
         }
 
-        window.onload = init;
+        window.onload = initQuiz;
     </script>
 </body>
 </html>
