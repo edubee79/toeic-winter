@@ -12,7 +12,7 @@
 
     <div id="start-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
         <h2 class="text-3xl font-black mb-2 tracking-tighter text-indigo-400">LC Part 2 실전</h2>
-        <p class="text-slate-400 mb-8 font-bold text-sm">음원을 끝까지 들어야 정답을 고를 수 있습니다.</p>
+        <p class="text-slate-400 mb-8 font-bold text-sm">틀리면 음원이 처음부터 다시 재생됩니다.</p>
         <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
             <button onclick="startTest(1)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 1</button>
             <button onclick="startTest(2)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 2</button>
@@ -29,15 +29,15 @@
 
     <main class="max-w-md mx-auto px-6 pb-20">
         <div id="quiz-container" class="space-y-8">
-            <div class="bg-white rounded-[3rem] p-12 text-center shadow-2xl relative overflow-hidden">
+            <div id="audio-card" class="bg-white rounded-[3rem] p-12 text-center shadow-2xl relative overflow-hidden transition-colors duration-300">
                 <div id="playback-wave" class="absolute inset-x-0 bottom-0 h-1 bg-indigo-100 origin-left scale-x-0 transition-transform duration-100"></div>
                 <button id="play-btn" onclick="handlePlay()" class="w-24 h-24 bg-indigo-600 rounded-full text-white text-4xl shadow-xl active:scale-95 flex items-center justify-center mx-auto transition-all">
                     <i class="fas fa-play ml-1"></i>
                 </button>
-                <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">Listen To End</p>
+                <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">Listen & Select</p>
             </div>
 
-            <div id="options-grid" class="grid gap-3 opacity-30 pointer-events-none transition-opacity duration-300">
+            <div id="options-grid" class="grid gap-3 transition-opacity duration-300">
                 <button onclick="checkAnswer(0)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600">(A) Option A</button>
                 <button onclick="checkAnswer(1)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600">(B) Option B</button>
                 <button onclick="checkAnswer(2)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600">(C) Option C</button>
@@ -46,7 +46,7 @@
 
         <div id="review-overlay" class="hidden text-center py-20 space-y-6">
             <h3 class="text-4xl font-black text-rose-500 italic">REVIEW</h3>
-            <p class="text-slate-400 font-bold">틀린 문제를 다시 풀어보세요.</p>
+            <p class="text-slate-400 font-bold">틀린 문제를 다시 완벽히 풀어보세요.</p>
             <button onclick="startReview()" class="w-full py-6 bg-rose-600 rounded-3xl font-black text-xl shadow-2xl">복습 시작하기</button>
         </div>
     </main>
@@ -55,7 +55,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 파이어베이스 설정 (기존과 동일)
         const firebaseConfig = { apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", authDomain: "eduthot-fb088.firebaseapp.com", projectId: "eduthot-fb088", storageBucket: "eduthot-fb088.firebasestorage.app", messagingSenderId: "919552710378", appId: "1:919552710378:web:7ba72ea2d195e092f8a993" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -72,8 +71,8 @@
         };
 
         let currentTestNum = 1;
-        let mainQueue = []; // 처음 풀 문제들
-        let wrongQueue = []; // 틀린 문제들
+        let mainQueue = [];
+        let wrongQueue = [];
         let isReviewMode = false;
         let currentIdx = 0;
         let audio = new Audio();
@@ -89,22 +88,27 @@
         };
 
         function loadQuestion() {
+            audio.pause();
+            audio.currentTime = 0;
+
             const list = isReviewMode ? wrongQueue : mainQueue;
             const data = list[currentIdx];
             
             document.getElementById('progress-text').innerText = isReviewMode ? `REVIEW Q.${data.id}` : `TEST ${currentTestNum} Q.${data.id}`;
-            document.getElementById('options-grid').classList.add('opacity-30', 'pointer-events-none');
-            document.getElementById('play-btn').classList.remove('opacity-50');
-            document.getElementById('audio-status').innerText = "Click Play to Listen";
+            document.getElementById('play-btn').innerHTML = '<i class="fas fa-play ml-1"></i>';
+            document.getElementById('audio-status').innerText = "Click Play";
             document.getElementById('playback-wave').style.transform = 'scaleX(0)';
+            document.getElementById('audio-card').classList.replace('bg-rose-100', 'bg-white');
             
             audio.src = `audio/Test_${currentTestNum.toString().padStart(2,'0')}-${data.id.toString().padStart(2,'0')}.mp3`;
         }
 
         window.handlePlay = function() {
+            audio.currentTime = 0; // 항상 처음부터 재생
             audio.play();
-            document.getElementById('play-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            document.getElementById('audio-status').innerText = "Listening...";
+            document.getElementById('play-btn').innerHTML = '<i class="fas fa-volume-up"></i>';
+            document.getElementById('audio-status').innerText = "Playing...";
+            document.getElementById('audio-card').classList.replace('bg-rose-100', 'bg-white');
 
             audio.ontimeupdate = () => {
                 const progress = audio.currentTime / audio.duration;
@@ -112,9 +116,8 @@
             };
 
             audio.onended = () => {
-                document.getElementById('play-btn').innerHTML = '<i class="fas fa-check text-green-500"></i>';
-                document.getElementById('audio-status').innerText = "Now Select Answer";
-                document.getElementById('options-grid').classList.remove('opacity-30', 'pointer-events-none');
+                document.getElementById('play-btn').innerHTML = '<i class="fas fa-redo-alt"></i>';
+                document.getElementById('audio-status').innerText = "Select Answer";
             };
         };
 
@@ -123,33 +126,39 @@
             const data = list[currentIdx];
 
             if (choice === data.correct) {
-                // 맞으면 리스트에서 제거 (리뷰 모드일 때만)
+                // 정답일 때: 음성 끄고 다음 문제로
+                audio.pause();
                 if (isReviewMode) {
                     wrongQueue.splice(currentIdx, 1);
                 } else {
                     currentIdx++;
                 }
+                
+                // 리스트 끝 확인
+                checkNavigation(list);
             } else {
-                // 틀리면 wrongQueue에 추가 (중복 방지)
+                // 틀렸을 때: 음성 멈추고 즉시 처음부터 다시 재생
+                audio.pause();
+                document.getElementById('audio-card').classList.replace('bg-white', 'bg-rose-100'); // 틀림 시각화
+                document.getElementById('audio-status').innerText = "Wrong! Listen Again";
+                
+                // 틀린 문제 리스트에 추가 (본 테스트일 때만)
                 if (!isReviewMode) {
                     if(!wrongQueue.find(i => i.id === data.id)) wrongQueue.push(data);
-                    currentIdx++;
-                } else {
-                    // 리뷰 모드에서 또 틀리면 다음 틀린 문제로 넘김
-                    currentIdx++;
                 }
+                
+                setTimeout(() => {
+                    handlePlay(); // 강제로 다시 들려줌
+                }, 300);
             }
+        };
 
-            // 다음 문제 체크
+        function checkNavigation(list) {
             if (currentIdx >= list.length) {
                 if (!isReviewMode) {
-                    if (wrongQueue.length > 0) {
-                        showReviewPrompt();
-                    } else {
-                        finishAll();
-                    }
+                    if (wrongQueue.length > 0) showReviewPrompt();
+                    else finishAll();
                 } else {
-                    // 리뷰 한 바퀴 돌았을 때 남은 게 있으면 다시 0번부터
                     if (wrongQueue.length > 0) {
                         currentIdx = 0;
                         loadQuestion();
@@ -160,7 +169,7 @@
             } else {
                 loadQuestion();
             }
-        };
+        }
 
         function showReviewPrompt() {
             document.getElementById('quiz-container').classList.add('hidden');
@@ -183,7 +192,7 @@
                     lastUpdate: new Date().toISOString()
                 }, { merge: true });
             }
-            alert(`축하합니다! TEST ${currentTestNum}의 모든 오답 정리를 마쳤습니다.`);
+            alert(`🏆 모든 학습과 오답 정리를 마쳤습니다!`);
             location.href = "index.html";
         }
     </script>
