@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC 필수 동사 50선</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; }
+        .word-card { perspective: 1000px; }
+        .card-inner { transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; position: relative; }
+        .card-inner.is-flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 2rem; padding: 2rem; }
+        .card-back { transform: rotateY(180deg); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <div class="max-w-md mx-auto px-4 py-8">
+        
+        <header class="flex justify-between items-center mb-10">
+            <button onclick="location.href='index.html'" class="text-slate-400"><i class="fas fa-arrow-left"></i></button>
+            <div id="progressStep" class="flex gap-2">
+                <div class="step-dot w-2 h-2 rounded-full bg-indigo-600"></div>
+                <div class="step-dot w-2 h-2 rounded-full bg-slate-200"></div>
+                <div class="step-dot w-2 h-2 rounded-full bg-slate-200"></div>
+            </div>
+            <div class="w-8"></div>
+        </header>
+
+        <div id="main-study">
+            <h1 class="text-2xl font-black text-slate-900 mb-2 tracking-tighter italic text-center">CORE VERB 50</h1>
+            <p class="text-slate-400 text-center text-xs font-bold mb-8 uppercase tracking-widest">Pre-Class Assignment</p>
+
+            <div id="step1" class="bg-white rounded-[3rem] shadow-xl p-10 text-center border border-slate-100">
+                <p class="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mb-10">Step 01. Self Check</p>
+                <div class="h-32 flex items-center justify-center mb-12">
+                    <span id="sortWord" class="text-4xl font-black text-indigo-600 tracking-tight">Loading...</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="sortWord(false)" class="bg-slate-100 py-6 rounded-[2rem] text-slate-400 font-black text-lg active:scale-95 transition">몰라요</button>
+                    <button onclick="sortWord(true)" class="bg-slate-900 py-6 rounded-[2rem] text-white font-black text-lg shadow-lg active:scale-95 transition">알아요</button>
+                </div>
+                <div class="mt-8 text-slate-300 font-bold text-sm"><span id="sortCount">1</span> / 50</div>
+            </div>
+
+            <div id="step2" class="hidden">
+                <div class="word-card h-80 mb-8">
+                    <div id="cardInner" class="card-inner w-full h-full shadow-2xl shadow-indigo-200">
+                        <div class="card-front bg-white border-2 border-slate-100 text-center">
+                            <span id="flashWord" class="text-4xl font-black text-slate-900 tracking-tight">Word</span>
+                        </div>
+                        <div class="card-back bg-indigo-600 text-white text-center p-8">
+                            <div>
+                                <span id="flashMean" class="block text-2xl font-black mb-4">뜻</span>
+                                <p id="flashEx" class="italic text-indigo-100 text-sm leading-snug">Example sentence</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <button id="memorizedBtn" class="bg-emerald-500 text-white py-6 rounded-[2rem] font-black text-xl shadow-xl active:scale-95 transition">외웠습니다! (삭제)</button>
+                    <button id="nextFlashBtn" class="hidden bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xl shadow-xl active:scale-95 transition">다음 단어 (반복)</button>
+                </div>
+            </div>
+
+            <div id="step3" class="hidden bg-white rounded-[3rem] shadow-xl p-10 border border-slate-100">
+                <h2 class="text-[10px] font-black text-slate-400 text-center uppercase tracking-[0.2em] mb-10">Step 03. Final Test</h2>
+                <div class="text-center mb-12 h-20 flex items-center justify-center">
+                    <span id="quizWord" class="text-3xl font-black text-indigo-600 italic">Quiz</span>
+                </div>
+                <div id="quizOptions" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 강사님이 선정하신 필수 동사 50개 데이터 내장
+        const verbs50 = [
+            {word: "accommodate", mean: "수용하다, 편의를 도모하다", ex: "The hotel can accommodate up to 500 guests."},
+            {word: "address", mean: "다루다, 처리하다", ex: "We need to address the technical issues immediately."},
+            {word: "allocate", mean: "할당하다, 배정하다", ex: "The board allocated funds for the new project."},
+            {word: "anticipate", mean: "예상하다, 기대하다", ex: "We anticipate a significant increase in sales."},
+            {word: "approve", mean: "승인하다", ex: "The manager approved the travel expenses."},
+            {word: "assign", mean: "배정하다, 맡기다", ex: "The supervisor assigned a new task to the team."},
+            {word: "assure", mean: "보장하다, 확신시키다", ex: "I assure you that the order will be delivered on time."},
+            {word: "attract", mean: "끌어들이다, 유인하다", ex: "The new advertisement attracted many customers."},
+            {word: "authorize", mean: "권한을 부여하다, 허가하다", ex: "Only authorized personnel can enter this area."},
+            {word: "collaborate", mean: "협력하다", ex: "We collaborated with the marketing department."},
+            {word: "comply", mean: "준수하다, 따르다", ex: "All employees must comply with the safety regulations."},
+            {word: "confirm", mean: "확인하다, 확정하다", ex: "Please confirm your reservation by email."},
+            {word: "contribute", mean: "기여하다, 공헌하다", ex: "Every member contributed to the success of the event."},
+            {word: "convey", mean: "전달하다", ex: "The CEO conveyed his gratitude to the staff."},
+            {word: "delegate", mean: "위임하다", ex: "A good leader knows how to delegate tasks."},
+            {word: "demonstrate", mean: "입증하다, 보여주다", ex: "The results demonstrate the effectiveness of the product."},
+            {word: "determine", mean: "결정하다, 알아내다", ex: "Price is determined by supply and demand."},
+            {word: "distribute", mean: "배포하다, 유통하다", ex: "The brochures were distributed to all attendees."},
+            {word: "ensure", mean: "보장하다, 확실히 하다", ex: "Please ensure that all doors are locked."},
+            {word: "evaluate", mean: "평가하다", ex: "Performance is evaluated on an annual basis."},
+            {word: "exceed", mean: "초과하다", ex: "The total cost exceeded our initial budget."},
+            {word: "facilitate", mean: "용이하게 하다, 촉진하다", ex: "The new software will facilitate communication."},
+            {word: "finalize", mean: "마무리 짓다, 확정하다", ex: "We need to finalize the contract by Friday."},
+            {word: "fulfill", mean: "충족시키다, 이행하다", ex: "The candidate fulfills all the requirements."},
+            {word: "generate", mean: "발생시키다, 창출하다", ex: "The campaign generated a lot of interest."},
+            {word: "implement", mean: "시행하다, 실시하다", ex: "The new policy will be implemented next month."},
+            {word: "indicate", mean: "나타내다, 가리키다", ex: "Surveys indicate that customer satisfaction is high."},
+            {word: "inspect", mean: "점검하다, 검사하다", ex: "The facility is inspected once a year."},
+            {word: "install", mean: "설치하다", ex: "We are going to install a new security system."},
+            {word: "instruct", mean: "지시하다", ex: "The manual instructs users on how to set up the device."},
+            {word: "investigate", mean: "조사하다", ex: "The police are investigating the cause of the fire."},
+            {word: "maintain", mean: "유지하다, 관리하다", ex: "It is important to maintain a healthy work-life balance."},
+            {word: "modify", mean: "수정하다, 변경하다", ex: "We had to modify the original plan slightly."},
+            {word: "monitor", mean: "감시하다, 관찰하다", ex: "The system monitors the temperature automatically."},
+            {word: "notify", mean: "통지하다, 알리다", ex: "Please notify us of any changes in your address."},
+            {word: "obtain", mean: "획득하다, 얻다", ex: "You can obtain the form at the reception desk."},
+            {word: "occupy", mean: "점유하다, 차지하다", ex: "All the rooms in the hotel are currently occupied."},
+            {word: "outline", mean: "개요를 서술하다", ex: "The proposal outlines the project goals."},
+            {word: "participate", mean: "참여하다", ex: "Over 100 people participated in the seminar."},
+            {word: "postpone", mean: "연기하다, 미루다", ex: "The meeting has been postponed until next week."},
+            {word: "proceed", mean: "진행하다", ex: "The construction is proceeding as planned."},
+            {word: "promote", mean: "승인하다, 홍보하다", ex: "She was promoted to Senior Manager."},
+            {word: "purchase", mean: "구매하다", ex: "Tickets can be purchased online."},
+            {word: "rectify", mean: "수정하다, 바로잡다", ex: "We will take steps to rectify the error."},
+            {word: "reflect", mean: "반영하다", ex: "The stock price reflects the current market conditions."},
+            {word: "relocate", mean: "이전하다", ex: "The company is relocating its headquarters to Seoul."},
+            {word: "request", mean: "요청하다", ex: "You can request a refund within 30 days."},
+            {word: "respond", mean: "응답하다", ex: "We will respond to your inquiry as soon as possible."},
+            {word: "submit", mean: "제출하다", ex: "Please submit your application by the deadline."},
+            {word: "verify", mean: "확인하다, 입증하다", ex: "We need to verify your identity before proceeding."}
+        ];
+
+        let unknownWords = [], nextLoopWords = [], quizWords = [];
+        let sortIdx = 0, quizIdx = 0, correctCount = 0;
+
+        // 초기 시작
+        function init() {
+            showSortWord();
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'en-US';
+            speech.rate = 0.9;
+            window.speechSynthesis.speak(speech);
+        }
+
+        window.sortWord = (known) => {
+            if (!known) unknownWords.push(verbs50[sortIdx]);
+            sortIdx++;
+            if (sortIdx < verbs50.length) showSortWord();
+            else startStep2();
+        };
+
+        function showSortWord() {
+            document.getElementById('sortWord').innerText = verbs50[sortIdx].word;
+            document.getElementById('sortCount').innerText = sortIdx + 1;
+        }
+
+        function startStep2() {
+            if (unknownWords.length === 0) { startStep3(); return; }
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            updateDots(1);
+            showFlashCard();
+        }
+
+        function showFlashCard() {
+            const word = unknownWords[0];
+            document.getElementById('flashWord').innerText = word.word;
+            document.getElementById('flashMean').innerText = word.mean;
+            document.getElementById('flashEx').innerText = word.ex || "";
+            document.getElementById('cardInner').classList.remove('is-flipped');
+            document.getElementById('memorizedBtn').classList.remove('hidden');
+            document.getElementById('nextFlashBtn').classList.add('hidden');
+        }
+
+        document.getElementById('cardInner').onclick = () => {
+            if (!document.getElementById('cardInner').classList.contains('is-flipped')) {
+                document.getElementById('cardInner').classList.add('is-flipped');
+                speak(document.getElementById('flashWord').innerText);
+                document.getElementById('memorizedBtn').classList.add('hidden');
+                document.getElementById('nextFlashBtn').classList.remove('hidden');
+            }
+        };
+
+        document.getElementById('memorizedBtn').onclick = () => { unknownWords.shift(); checkCycle(); };
+        document.getElementById('nextFlashBtn').onclick = () => { nextLoopWords.push(unknownWords.shift()); checkCycle(); };
+
+        function checkCycle() {
+            if (unknownWords.length === 0) {
+                if (nextLoopWords.length === 0) startStep3();
+                else { unknownWords = [...nextLoopWords]; nextLoopWords = []; showFlashCard(); }
+            } else showFlashCard();
+        }
+
+        function startStep3() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+            updateDots(2);
+            quizWords = [...verbs50].sort(() => 0.5 - Math.random()).slice(0, 20); // 50개 중 20개만 랜덤 테스트
+            showQuiz();
+        }
+
+        function showQuiz() {
+            const correct = quizWords[quizIdx];
+            document.getElementById('quizWord').innerText = correct.word;
+            let options = [correct.mean];
+            while(options.length < 4) {
+                let r = verbs50[Math.floor(Math.random()*verbs50.length)].mean;
+                if(!options.includes(r)) options.push(r);
+            }
+            options.sort(() => 0.5 - Math.random());
+            const container = document.getElementById('quizOptions');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full py-5 px-6 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-left hover:bg-indigo-50 transition-all";
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if(opt === correct.mean) { correctCount++; }
+                    else { alert(`오답! 정답: ${correct.mean}`); }
+                    quizIdx++;
+                    if(quizIdx < quizWords.length) showQuiz();
+                    else finishQuiz();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function finishQuiz() {
+            const score = Math.round((correctCount / quizWords.length) * 100);
+            alert(`🏆 학습 완료! 점수: ${score}점\n메인 화면으로 돌아갑니다.`);
+            location.href = "index.html";
+        }
+
+        function updateDots(idx) {
+            const dots = document.querySelectorAll('.step-dot');
+            dots.forEach((d, i) => d.className = i <= idx ? "step-dot w-2 h-2 rounded-full bg-indigo-600" : "step-dot w-2 h-2 rounded-full bg-slate-200");
+        }
+
+        init();
+    </script>
+</body>
+</html>
