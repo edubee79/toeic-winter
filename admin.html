@@ -3,43 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전체 학습 현황 관리자</title>
+    <title>Admin | Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen p-6">
-
-    <div class="max-w-6xl mx-auto">
+<body class="bg-slate-100 p-8">
+    <div class="max-w-5xl mx-auto">
         <header class="flex justify-between items-center mb-10">
-            <div>
-                <h1 class="text-3xl font-black text-indigo-400 italic tracking-tighter">TOTAL MONITORING</h1>
-                <p class="text-slate-400 text-sm font-bold">학생들의 전체 학습 현황을 한눈에 확인합니다.</p>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">STUDENT STATUS</h1>
+            <div class="flex gap-2">
+                <button onclick="filterClass('all')" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold">전체</button>
+                <button onclick="filterClass('650')" class="px-4 py-2 bg-white text-slate-600 rounded-xl text-sm font-bold border border-slate-200">650반</button>
+                <button onclick="filterClass('780')" class="px-4 py-2 bg-white text-slate-600 rounded-xl text-sm font-bold border border-slate-200">780반</button>
             </div>
-            <button onclick="location.reload()" class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 transition-all border border-slate-700">
-                <i class="fas fa-sync-alt"></i>
-            </button>
         </header>
 
-        <div class="bg-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-700">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-700/50 text-indigo-300 uppercase text-[10px] tracking-widest font-black">
-                            <th class="px-6 py-5">학생 이름/ID</th>
-                            <th class="px-6 py-5">단어 테스트 (Day)</th>
-                            <th class="px-6 py-5">Part 1 쉐도잉</th>
-                            <th class="px-6 py-5">Part 2 실전</th>
-                            <th class="px-6 py-5 text-right">마지막 업데이트</th>
-                        </tr>
-                    </thead>
-                    <tbody id="user-list" class="divide-y divide-slate-700">
-                        <tr>
-                            <td colspan="5" class="px-6 py-20 text-center text-slate-500 font-bold italic animate-pulse">데이터 로딩 중...</td>
-                        </tr>
+        <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-200">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-100">
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Class</th>
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">ID (학번)</th>
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Name (이름)</th>
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress (Voca)</th>
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress (Shadow)</th>
+                    </tr>
+                </thead>
+                <tbody id="student-list">
                     </tbody>
-                </table>
-            </div>
+            </table>
         </div>
     </div>
 
@@ -47,58 +39,41 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = { 
-            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", 
-            authDomain: "eduthot-fb088.firebaseapp.com", 
-            projectId: "eduthot-fb088", 
-            storageBucket: "eduthot-fb088.firebasestorage.app", 
-            messagingSenderId: "919552710378", 
-            appId: "1:919552710378:web:7ba72ea2d195e092f8a993" 
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", authDomain: "eduthot-fb088.firebaseapp.com", projectId: "eduthot-fb088", storageBucket: "eduthot-fb088.firebasestorage.app", messagingSenderId: "919552710378", appId: "1:919552710378:web:7ba72ea2d195e092f8a993" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function fetchAllData() {
+        async function loadStudents() {
             const querySnapshot = await getDocs(collection(db, "Winter_Users"));
-            const userList = document.getElementById('user-list');
-            userList.innerHTML = "";
-
-            if (querySnapshot.empty) {
-                userList.innerHTML = '<tr><td colspan="5" class="px-6 py-20 text-center text-slate-500">데이터가 없습니다.</td></tr>';
-                return;
-            }
+            const list = document.getElementById('student-list');
+            list.innerHTML = '';
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const userId = doc.id;
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors border-b border-slate-50";
+                row.setAttribute('data-class', data.userClass);
                 
-                // 데이터 가공 (없으면 '-' 표시)
-                const voca = data.vocabulary ? data.vocabulary.join(", ") : "-";
-                const part1 = data.passedShadowing ? data.passedShadowing.join(", ") : "-";
-                const part2 = data.completed_part2 ? data.completed_part2.join(", ") : "-";
-                const lastUpdate = data.lastUpdate ? new Date(data.lastUpdate).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : "-";
-
-                const row = `
-                    <tr class="hover:bg-slate-700/30 transition-colors">
-                        <td class="px-6 py-5 font-black text-white text-sm">${userId}</td>
-                        <td class="px-6 py-5">
-                            <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded-lg">${voca}</span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-lg">${part1}</span>
-                        </td>
-                        <td class="px-6 py-5">
-                            <span class="text-xs font-bold text-indigo-400 bg-indigo-400/10 px-2 py-1 rounded-lg">${part2}</span>
-                        </td>
-                        <td class="px-6 py-5 text-right text-slate-500 text-[10px] font-mono">${lastUpdate}</td>
-                    </tr>
+                row.innerHTML = `
+                    <td class="p-5 font-bold text-slate-500">${data.userClass}</td>
+                    <td class="p-5 font-medium text-slate-400">${data.userId}</td>
+                    <td class="p-5 font-black text-slate-900">${data.userName || '미입력'}</td>
+                    <td class="p-5"><span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-black">DAY ${data.passedVocaDays ? data.passedVocaDays.join(', ') : '-'}</span></td>
+                    <td class="p-5 text-xs text-slate-400 truncate max-w-[150px]">${data.completed_shadowing ? data.completed_shadowing.join(', ') : '기록 없음'}</td>
                 `;
-                userList.innerHTML += row;
+                list.appendChild(row);
             });
         }
 
-        fetchAllData();
+        window.filterClass = (cls) => {
+            const rows = document.querySelectorAll('#student-list tr');
+            rows.forEach(row => {
+                if(cls === 'all') row.style.display = '';
+                else row.style.display = row.getAttribute('data-class') === cls ? '' : 'none';
+            });
+        };
+
+        loadStudents();
     </script>
 </body>
 </html>

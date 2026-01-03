@@ -13,7 +13,7 @@
     <nav class="p-6 flex justify-between items-center max-w-md mx-auto border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
         <h1 class="font-black text-xl italic tracking-tighter text-indigo-400">WINTER CAMP</h1>
         <div class="flex items-center gap-3">
-            <span id="user-display" class="text-[10px] font-bold text-slate-400">학습자 정보 없음</span>
+            <span id="user-display" class="text-[10px] font-bold text-slate-400 text-right">데이터 로딩 중...</span>
             <button onclick="handleLogout()" class="text-[10px] bg-slate-800 text-rose-400 px-2 py-1 rounded-md border border-rose-500/30 font-black hover:bg-rose-500 hover:text-white transition-all">
                 EXIT
             </button>
@@ -54,33 +54,29 @@
     </main>
 
     <script>
-        // ✅ 1. 페이지 로드 시 사용자 정보 확인
+        // ✅ 페이지 로드 시 사용자 정보 확인 (강사님의 데이터 구조에 최적화)
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
             
             if (user && user.userId) {
-                // 이름과 학교 정보가 있으면 상단에 표시
-                const infoText = `${user.userSchool || ''} ${user.userId}`;
+                // 상단 네비바에 '650반 홍길동(학번)' 형식으로 표시
+                const infoText = `${user.userClass}반 ${user.userName || ''} (${user.userId})`;
                 document.getElementById('user-display').innerText = infoText;
             } else {
-                // 정보가 없으면 로그인 페이지로 이동
                 location.href = 'login.html';
             }
         });
 
-        // ✅ 2. 로그아웃 처리 함수
         function handleLogout() {
-            if (confirm("로그아웃 하시겠습니까?\n학습 기록은 서버에 안전하게 저장되어 있습니다.")) {
+            if (confirm("로그아웃 하시겠습니까?")) {
                 localStorage.removeItem('toeic_user');
                 location.href = 'login.html';
             }
         }
 
-        // ✅ 3. 관리자 접속 함수 (비밀번호: kang1818^^)
         function accessAdmin() {
             const adminPassword = "kang1818^^"; 
             const userInput = prompt("관리자 비밀번호를 입력하세요.");
-
             if (userInput === adminPassword) {
                 location.href = "admin.html";
             } else if (userInput !== null) {
