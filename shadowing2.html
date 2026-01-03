@@ -23,7 +23,7 @@
     </div>
 
     <nav class="p-6 flex justify-between items-center max-w-md mx-auto">
-        <button onclick="location.reload()"><i class="fas fa-home text-slate-400 text-xl"></i></button>
+        <button onclick="location.href='index.html'"><i class="fas fa-home text-slate-400 text-xl"></i></button>
         <span id="progress-text" class="font-black text-indigo-400 text-lg uppercase tracking-widest italic">READY</span>
         <div class="w-4"></div>
     </nav>
@@ -39,21 +39,15 @@
             </div>
 
             <div id="options-grid" class="grid gap-3">
-                <div class="relative group" v-for="i in [0,1,2]">
-                    <button id="btn-0" onclick="checkAnswer(0)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
-                        <span class="btn-label">(A) Option A</span>
-                    </button>
-                </div>
-                <div class="relative group">
-                    <button id="btn-1" onclick="checkAnswer(1)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
-                        <span class="btn-label">(B) Option B</span>
-                    </button>
-                </div>
-                <div class="relative group">
-                    <button id="btn-2" onclick="checkAnswer(2)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
-                        <span class="btn-label">(C) Option C</span>
-                    </button>
-                </div>
+                <button id="btn-0" onclick="checkAnswer(0)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
+                    <span class="btn-label">(A) Option A</span>
+                </button>
+                <button id="btn-1" onclick="checkAnswer(1)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
+                    <span class="btn-label">(B) Option B</span>
+                </button>
+                <button id="btn-2" onclick="checkAnswer(2)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300">
+                    <span class="btn-label">(C) Option C</span>
+                </button>
             </div>
         </div>
 
@@ -72,37 +66,31 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ✅ TEST 1~5 데이터 뱅크
+        // ✅ 데이터 구조 보강 (7번~31번까지 템플릿 생성 로직 포함)
+        const generateTestData = (scripts) => scripts.map((s, i) => ({ id: 7 + i, correct: s.c, script: s.s }));
+
         const testBank = {
-            1: [
-                { id: 7, correct: 1, script: "About ten years old." },
-                { id: 8, correct: 2, script: "Sure, I'll be there!" },
-                { id: 9, correct: 2, script: "It came from the tenants in B23." },
-                { id: 10, correct: 0, script: "Of course, I'll take care of it." },
-                { id: 11, correct: 2, script: "Because a light needed to be fixed." },
-                { id: 12, correct: 2, script: "Yes, they chose Jacob Borgman." },
-                { id: 13, correct: 2, script: "Let's eat here." },
-                { id: 14, correct: 1, script: "No, I'll send it now." },
-                { id: 15, correct: 0, script: "There's a lot of rain in the forecast." },
-                { id: 16, correct: 0, script: "Just water, please." },
-                { id: 17, correct: 0, script: "That's excellent news!" },
-                { id: 18, correct: 2, script: "About once a month." },
-                { id: 19, correct: 1, script: "I didn't bring boots." },
-                { id: 20, correct: 2, script: "Yes, I made a reservation last week." },
-                { id: 21, correct: 0, script: "It's sold out." },
-                { id: 22, correct: 1, script: "I haven't had the chance." },
-                { id: 23, correct: 2, script: "The prototype is still being tested." },
-                { id: 24, correct: 0, script: "They decided to drive." },
-                { id: 25, correct: 2, script: "I needed some for a large bouquet." },
-                { id: 26, correct: 0, script: "Why don't we go see it?" },
-                { id: 27, correct: 1, script: "Clara's already organizing one." },
-                { id: 28, correct: 0, script: "We just sent an e-mail to all instructors." },
-                { id: 29, correct: 2, script: "Our spring merchandise is arriving soon." },
-                { id: 30, correct: 2, script: "I have very limited time." },
-                { id: 31, correct: 1, script: "I really like working with computers." }
-            ],
-            2: [], 3: [], 4: [], 5: [] // 추후 스크립트 데이터 추가 가능
+            1: generateTestData([
+                {c:1, s:"About ten years old."}, {c:2, s:"Sure, I'll be there!"}, {c:2, s:"It came from the tenants in B23."},
+                {c:0, s:"Of course, I'll take care of it."}, {c:2, s:"Because a light needed to be fixed."}, {c:2, s:"Yes, they chose Jacob Borgman."},
+                {c:2, s:"Let's eat here."}, {c:1, s:"No, I'll send it now."}, {c:0, s:"There's a lot of rain in the forecast."},
+                {c:0, s:"Just water, please."}, {c:0, s:"That's excellent news!"}, {c:2, s:"About once a month."},
+                {c:1, s:"I didn't bring boots."}, {c:2, s:"Yes, I made a reservation last week."}, {c:0, s:"It's sold out."},
+                {c:1, s:"I haven't had the chance."}, {c:2, s:"The prototype is still being tested."}, {c:0, s:"They decided to drive."},
+                {c:2, s:"I needed some for a large bouquet."}, {c:0, s:"Why don't we go see it?"}, {c:1, s:"Clara's already organizing one."},
+                {c:0, s:"We just sent an e-mail to all instructors."}, {c:2, s:"Our spring merchandise is arriving soon."}, {c:2, s:"I have very limited time."}, {c:1, s:"I really like working with computers."}
+            ]),
+            // 2~5회차도 일단 데이터 구조가 있어야 작동함 (내용은 추후 강사님이 PDF 보고 수정 가능)
+            2: generateTestData([{c:0, s:"Script for Test 2 Q7"}, {c:1, s:"Script Q8"}]), 
+            3: generateTestData([{c:0, s:"Script for Test 3 Q7"}]),
+            4: generateTestData([{c:1, s:"Script for Test 4 Q7"}]),
+            5: generateTestData([{c:2, s:"Script for Test 5 Q7"}]) 
         };
+
+        // 데이터가 없는 회차를 위해 기본값 설정 함수
+        function getTestData(num) {
+            return (testBank[num] && testBank[num].length > 0) ? testBank[num] : testBank[1];
+        }
 
         let currentTestNum = 1;
         let mainQueue = [];
@@ -113,8 +101,7 @@
 
         window.startTest = function(num) {
             currentTestNum = num;
-            // 해당 회차 데이터가 없으면 1회차 구조를 복사 (id 7~31 자동 생성 로직 가능)
-            mainQueue = testBank[num] && testBank[num].length > 0 ? [...testBank[num]] : [...testBank[1]];
+            mainQueue = getTestData(num);
             wrongQueue = [];
             isReviewMode = false;
             currentIdx = 0;
@@ -124,8 +111,8 @@
 
         function loadQuestion() {
             audio.pause();
-            audio.currentTime = 0;
-
+            audio.onended = null; // 이벤트 초기화
+            
             const list = isReviewMode ? wrongQueue : mainQueue;
             const data = list[currentIdx];
             
@@ -136,21 +123,28 @@
             
             [0, 1, 2].forEach(i => {
                 const btn = document.getElementById(`btn-${i}`);
-                btn.className = "option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 active:bg-indigo-600 transition-all duration-300";
+                btn.className = "option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 transition-all duration-300";
+                btn.disabled = false;
                 btn.querySelector('.btn-label').innerText = `(${String.fromCharCode(65+i)}) Option ${String.fromCharCode(65+i)}`;
             });
             
-            audio.src = `audio/Test_${currentTestNum.toString().padStart(2,'0')}-${data.id.toString().padStart(2,'0')}.mp3`;
+            // ✅ 파일명 생성 시 padStart로 01, 02 형식 유지
+            const tNum = currentTestNum.toString().padStart(2, '0');
+            const qNum = data.id.toString().padStart(2, '0');
+            audio.src = `audio/Test_${tNum}-${qNum}.mp3`;
         }
 
         window.handlePlay = function() {
             audio.currentTime = 0;
-            audio.play().catch(e => console.log("Audio play failed. Check path."));
+            audio.play().catch(e => {
+                console.error("Audio error:", e);
+                document.getElementById('audio-status').innerText = "Audio Not Found";
+            });
             document.getElementById('play-btn').innerHTML = '<i class="fas fa-volume-up"></i>';
             document.getElementById('audio-status').innerText = "Playing...";
 
             audio.ontimeupdate = () => {
-                const progress = audio.currentTime / audio.duration;
+                const progress = audio.currentTime / audio.duration || 0;
                 document.getElementById('playback-wave').style.transform = `scaleX(${progress})`;
             };
 
@@ -163,46 +157,52 @@
         window.checkAnswer = function(choice) {
             const list = isReviewMode ? wrongQueue : mainQueue;
             const data = list[currentIdx];
+            
+            // 버튼 비활성화 (중복 클릭 방지)
+            [0,1,2].forEach(i => document.getElementById(`btn-${i}`).disabled = true);
 
             if (choice === data.correct) {
-                audio.pause();
-                const correctBtn = document.getElementById(`btn-${choice}`);
-                correctBtn.classList.replace('bg-slate-800', 'bg-green-600');
-                correctBtn.classList.replace('border-slate-700', 'border-green-400');
+                const btn = document.getElementById(`btn-${choice}`);
+                btn.classList.replace('bg-slate-800', 'bg-green-600');
+                btn.classList.replace('border-slate-700', 'border-green-400');
                 
                 setTimeout(() => {
-                    if (isReviewMode) wrongQueue.splice(currentIdx, 1);
-                    else currentIdx++;
+                    if (isReviewMode) {
+                        wrongQueue.splice(currentIdx, 1);
+                    } else {
+                        currentIdx++;
+                    }
                     checkNavigation(list);
-                }, 600);
+                }, 800);
             } else {
-                audio.pause();
-                const wrongBtn = document.getElementById(`btn-${choice}`);
-                wrongBtn.classList.replace('bg-slate-800', 'bg-rose-600');
-                wrongBtn.classList.replace('border-slate-700', 'border-rose-400');
-                // ✅ 틀린 번호 옆에 정답 스크립트 노출
-                wrongBtn.querySelector('.btn-label').innerHTML = `<span class="text-[10px] block opacity-70 uppercase">Wrong! Answer script:</span> ${data.script || 'Check your PDF answer key'}`;
+                const btn = document.getElementById(`btn-${choice}`);
+                btn.classList.replace('bg-slate-800', 'bg-rose-600');
+                btn.classList.replace('border-slate-700', 'border-rose-400');
+                
+                // ✅ 틀린 즉시 스크립트 노출
+                btn.querySelector('.btn-label').innerHTML = `<span class="text-[10px] block opacity-70 uppercase">Wrong! Answer script:</span> ${data.script}`;
                 
                 if (!isReviewMode) {
                     if(!wrongQueue.find(i => i.id === data.id)) wrongQueue.push(data);
                 }
-                
-                setTimeout(() => { handlePlay(); }, 500);
+
+                // 틀렸을 땐 다음 버튼을 직접 눌러야 넘어가게 하거나 잠시 후 재시도하게 함
+                setTimeout(() => {
+                    btn.disabled = false; // 다시 시도 가능하게 하거나, 필요시 수동 이동 버튼 노출
+                    handlePlay(); // 음원 다시 들려줌
+                }, 1500);
             }
         };
 
         function checkNavigation(list) {
             if (currentIdx >= list.length) {
-                if (!isReviewMode) {
-                    if (wrongQueue.length > 0) showReviewPrompt();
-                    else finishAll();
+                if (!isReviewMode && wrongQueue.length > 0) {
+                    showReviewPrompt();
+                } else if (isReviewMode && wrongQueue.length > 0) {
+                    currentIdx = 0;
+                    loadQuestion();
                 } else {
-                    if (wrongQueue.length > 0) {
-                        currentIdx = 0;
-                        loadQuestion();
-                    } else {
-                        finishAll();
-                    }
+                    finishAll();
                 }
             } else {
                 loadQuestion();
@@ -225,10 +225,12 @@
         async function finishAll() {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
             if (user) {
-                await setDoc(doc(db, "Winter_Users", user.userId), {
-                    completed_part2: arrayUnion(`Test ${currentTestNum} 완료`),
-                    lastUpdate: new Date().toISOString()
-                }, { merge: true });
+                try {
+                    await setDoc(doc(db, "Winter_Users", user.userId), {
+                        completed_part2: arrayUnion(`Test ${currentTestNum} 완료`),
+                        lastUpdate: new Date().toISOString()
+                    }, { merge: true });
+                } catch(e) { console.error("Firebase save failed", e); }
             }
             alert(`🏆 TEST ${currentTestNum} 완료!`);
             location.href = "index.html";
