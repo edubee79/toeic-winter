@@ -18,7 +18,7 @@
             <button onclick="startTest(2)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 2</button>
             <button onclick="startTest(3)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 3</button>
             <button onclick="startTest(4)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 4</button>
-            <button onclick="startTest(5)" class="py-4 bg-indigo-600 rounded-2xl font-black border border-indigo-500 active:scale-95 transition-all col-span-2 mt-2 shadow-lg shadow-indigo-500/20">TEST 5 시작하기</button>
+            <button onclick="startTest(5)" class="py-4 bg-indigo-600 rounded-2xl font-black border border-indigo-500 active:scale-95 transition-all col-span-2 mt-2 shadow-lg shadow-indigo-500/20">학습 시작하기</button>
         </div>
     </div>
 
@@ -68,110 +68,141 @@
 
         const generateData = (arr) => arr.map((item, index) => ({ id: 7 + index, correct: item.c, script: item.s, options: item.o }));
 
-        // 수정된 데이터: 사용자가 제공한 스크립트 기반 정확 보정 (중복/오타 제거)
         const testBank = {
             1: generateData([
-                {c:1, s:"About ten years old.", o:["To ship some materials.","About ten years old.","Company offices, I think."]},
-                {c:2, s:"Sure, I'll be there!", o:["I'm sorry I was late for the meeting.","Mostly just local musicians.","Sure, I'll be there!"]},
-                {c:2, s:"It came from the tenants in B23.", o:["It's what you did for a living.","Submit your assignment here.","It came from the tenants in B23."]},
-                {c:0, s:"Of course, I'll take care of it.", o:["Of course, I'll take care of it.","An e-mail receipt.","Could I get change for a dollar?"]},
-                {c:2, s:"Because a light needed to be fixed.", o:["No, he didn't.","From three o'clock until four.","Because a light needed to be fixed."]},
-                {c:2, s:"Yes, they chose Jacob Borgman.", o:["Put it on the highest shelf.","The personnel department.","Yes, they chose Jacob Borgman."]},
-                {c:2, s:"Let's eat here.", o:["He went there yesterday.","Well, maybe a sandwich.","Let's eat here."]},
-                {c:1, s:"No, I'll send it now.", o:["Yes, I would agree.","No, I'll send it now.","Check the employee manual."]},
-                {c:0, s:"There's a lot of rain in the forecast.", o:["There's a lot of rain in the forecast.","Sure, I like salad.","At the end of this corridor."]},
-                {c:0, s:"Just water, please.", o:["Just water, please.","For a few dollars more.","A fifteen-minute break."]},
-                {c:0, s:"That's excellent news!", o:["That's excellent news!","A few times a day.","To the end of April."]},
-                {c:2, s:"About once a month.", o:["It turned out well.","Yes, I did find one.","About once a month."]},
-                {c:1, s:"I didn't bring boots.", o:["This seat is available.","I didn't bring boots.","At the visitors' center."]},
-                {c:2, s:"Yes, I made a reservation last week.", o:["Very enjoyable, thanks.","He usually takes the train.","Yes, I made a reservation last week."]},
-                {c:0, s:"It's sold out.", o:["It's sold out.","He's a concert violinist.","They already left."]},
-                {c:1, s:"I haven't had the chance.", o:["Can I take your order?","I haven't had the chance.","About 40 dollars."]},
-                {c:2, s:"The prototype is still being tested.", o:["Only with fruits and vegetables.","In the kitchen cabinet.","The prototype is still being tested."]},
-                {c:0, s:"They decided to drive.", o:["They decided to drive.","At terminal 2.","It's a marketing position."]},
-                {c:2, s:"I needed some for a large bouquet.", o:["About three liters of water.","No, I didn't check out the sale.","I needed some for a large bouquet."]},
-                {c:0, s:"Why don't we go see it?", o:["Why don't we go see it?","After the announcement.","He made a great speech."]},
-                {c:1, s:"Clara's already organizing one.", o:["Thanks, but I can't swim.","Clara's already organizing one.","It's a very interesting article."]},
-                {c:0, s:"We just sent an e-mail to all instructors.", o:["We just sent an e-mail to all instructors.","Five to seven months.","Yes, it's a beautiful building."]},
-                {c:2, s:"Our spring merchandise is arriving soon.", o:["In the new shopping mall.","Yes, they come in other colors.","Our spring merchandise is arriving soon."]},
-                {c:2, s:"I have very limited time.", o:["Thank you for meeting me.","A contact lens prescription.","I have very limited time."]},
-                {c:1, s:"I really like working with computers.", o:["No, at ten A.M.","I really like working with computers.","Just a résumé is needed."]}
+                {c:1, s:"How old is this building?", o:["To ship some materials.", "About ten years old.", "Company offices, I think."]},
+                {c:2, s:"Can you come to my jazz performance tonight?", o:["I'm sorry I was late for the meeting.", "Mostly just local musicians.", "Sure, I'll be there!"]},
+                {c:2, s:"Which apartment submitted a work order?", o:["It's what you did for a living.", "Submit your assignment here.", "It came from the tenants in B23."]},
+                {c:0, s:"Will you contact the vendor about changing our delivery date?", o:["Of course, I'll take care of it.", "An e-mail receipt.", "Could I get change for a dollar?"]},
+                {c:2, s:"Why was the maintenance worker here?", o:["No, he didn't.", "From three o'clock until four.", "Because a light needed to be fixed."]},
+                {c:2, s:"Did management make a hiring decision yet?", o:["Put it on the highest shelf.", "The personnel department.", "Yes, they chose Jacob Borgman."]},
+                {c:2, s:"Do you want to eat here in our cafeteria or go out?", o:["He went there yesterday.", "Well, maybe a sandwich.", "Lets eat here."]},
+                {c:1, s:"Didn't you e-mail the employment contract to Mr. Patel yesterday?", o:["Yes, I would agree.", "No, I'll send it now.", "Check the employee manual."]},
+                {c:0, s:"Our division's picnic is this Saturday, right?", o:["There's a lot of rain in the forecast.", "Sure, I like salad.", "At the end of this corridor."]},
+                {c:0, s:"Would you like coffee or tea?", o:["Just water, please.", "For a few dollars more.", "A fifteen-minute break."]},
+                {c:0, s:"We achieved our sales targets this month.", o:["That's excellent news!", "A few times a day.", "To the end of April."]},
+                {c:2, s:"How often do you travel for your job?", o:["It turned out well.", "Yes, I did find one.", "About once a month."]},
+                {c:1, s:"We should hike the Wildflower Trail today.", o:["This seat is available.", "I didn't bring boots.", "At the visitors' center."]},
+                {c:2, s:"You've booked a hotel in London, haven't you?", o:["Very enjoyable, thanks.", "He usually takes the train.", "Yes, I made a reservation last week."]},
+                {c:0, s:"Are there any tickets left for tonight's concert?", o:["It's sold out.", "He's a concert violinist.", "They already left."]},
+                {c:1, s:"Haven't you used this software before?", o:["Can I take your order?", "I haven't had the chance.", "About 40 dollars."]},
+                {c:2, s:"When is the new blender going to be released?", o:["Only with fruits and vegetables.", "In the kitchen cabinet.", "The prototype is still being tested."]},
+                {c:0, s:"Who's picking up our clients at the airport?", o:["They decided to drive.", "At terminal 2.", "It's a marketing position."]},
+                {c:2, s:"Where are the red roses that came in this morning?", o:["About three liters of water.", "No, I didn't check out the sale.", "I needed some for a large bouquet."]},
+                {c:0, s:"This film has been nominated for several awards.", o:["Why don't we go see it?", "After the announcement.", "He made a great speech."]},
+                {c:1, s:"Who's interested in starting a car pool program?", o:["Thanks, but I can't swim.", "Clara's already organizing one.", "It's a very interesting article."]},
+                {c:0, s:"Where will I teach my workshop this month?", o:["We just sent an e-mail to all instructors.", "Five to seven months.", "Yes, it's a beautiful building."]},
+                {c:2, s:"Why are we moving these sweaters to the back of the store?", o:["In the new shopping mall.", "Yes, they come in other colors.", "Our spring merchandise is arriving soon."]},
+                {c:2, s:"Would you be interested in working on some of these contracts?", o:["Thank you for meeting me.", "A contact lens prescription.", "I have very limited time."]},
+                {c:1, s:"What type of job are you looking for?", o:["No, at ten A.M.", "I really like working with computers.", "Just a résumé is needed."]}
+            ]),
+            2: generateData([
+                {c:0, s:"Have the machines on the factory floor been cleaned?", o:["No, not yet.", "Ifs in the shipping container.", "I just put it in the trash bin."]},
+                {c:0, s:"How much will the budget increase next year?", o:["About 10 percent.", "Three hours, I think.", "At the bank's main branch."]},
+                {c:1, s:"You're going to water the plants before you leave, aren't you?", o:["I walked the whole way.", "Yes, right after lunch.", "In the breakroom."]},
+                {c:1, s:"Aren't you going to schedule an eye doctor appointment?", o:["Those glasses look nice on you.", "I already scheduled one.", "The seminar is three days long."]},
+                {c:2, s:"I'm going to try to fix this printer.", o:["You're right, it doesn't fit.", "Double-sided copies.", "Are you sure it can be repaired?"]},
+                {c:2, s:"What should we do with these brochures?", o:["A trip to the seashore.", "Yes, I found it already.", "111 leave them at the front desk."]},
+                {c:1, s:"Has the policy meeting been rescheduled?", o:["We have lots of desk calendar designs.", "Yes, its happening tomorrow instead.", "This soup I ordered is delicious."]},
+                {c:0, s:"Why don't we stop by the office cafeteria on our way to the workshop?", o:["Sure, we have time for that.", "A full-service buffet.", "The topic is professional networking."]},
+                {c:1, s:"Have you tried our famous pasta dish?", o:["We need a table for five.", "Yes, it was delicious.", "111 try to make it on time."]},
+                {c:1, s:"Who's the opening act at tonight's concert?", o:["Could you turn up the volume?", "A jazz singer from France.", "The position has been filled."]},
+                {c:2, s:"When do the product demonstrations start?", o:["The schedule was e-mailed last Friday.", "Some innovative features.", "In room 202, I think."]},
+                {c:2, s:"I tried updating the Web site, but it didn't work.", o:["That date works for me.", "Usually our online reviews.", "Just send me the changes you want."]},
+                {c:1, s:"Did you hire a new welding specialist?", o:["The parts back-ordered.", "Yes, he starts tomorrow.", "No, it should be higher."]},
+                {c:2, s:"How was the color palette for the lobby chosen?", o:["Blue and orange.", "It was fine, thanks.", "I wasn't involved."]},
+                {c:1, s:"When are we ordering more supplies for the office?", o:["In the storage closet.", "Next week on Monday.", "The new desk looks great!"]},
+                {c:0, s:"The battery for the water p-rip is going to be solar powered, right?", o:["We're still in the planning stages.", "A hundred and forty dollars per year.", "Yes, I'd love a glass of water."]},
+                {c:1, s:"Where can I buy a charger for this laptop?", o:["Around three o'clock.", "I can order one for you.", "A limited return policy."]},
+                {c:0, s:"Do I need to reserve a meeting room?", o:["Yes, let me show you how.", "The service is good.", "My slide presentation."]},
+                {c:1, s:"When's the new department director supposed to start?", o:["Ifs an hour long.", "Ms. Pavlova isn't retiring for several weeks.", "No, that department's upstairs."]},
+                {c:2, s:"Should I deliver these pizzas, or will you?", o:["No thanks—I'm not hungry.", "Ten dollars for two.", "They're being picked up."]},
+                {c:1, s:"This month's shipment schedule has been revised.", o:["I couldn't find them either.", "Which dates have been changed?", "Two dollars per pound."]},
+                {c:0, s:"How much will the repairs cost?", o:["The work is covered under the warranty plan.", "Yes, it's also available in red.", "In about two weeks."]},
+                {c:2, s:"Why don't we provide more samples of the wallpaper patterns?", o:["The newspaper is delivered daily.", "An interior design course.", "There are plenty in the binders."]},
+                {c:0, s:"Can you give me a tour of the property this afternoon?", o:["Sorry, I won't have time until tomorrow.", "It has a very modern design.", "A house on Maple Street."]},
+                {c:0, s:"Who's scheduled to test the product today?", o:["We're waiting for confirmation.", "Ifs a great album, right?", "Ab=jt six weeks ago."]}
             ]),
             3: generateData([
-                {c:0, s:"Because it's out of stock.", o:["Because it's out of stock.","Those roses smell nice.","No, the other cake."]},
-                {c:0, s:"At four o'clock.", o:["At four o'clock.","Thats a delicious flavor.","Many vegetarian options."]},
-                {c:2, s:"Right after lunch.", o:["At a networking event.","I started this job six years ago.","Right after lunch."]},
-                {c:1, s:"Around 200 dollars.", o:["I have two pairs of shoes.","Around 200 dollars.","The restaurant downtown."]},
-                {c:1, s:"Yes, for an annual checkup.", o:["Oh, Pve already had breakfast.","Yes, for an annual checkup.","Lefs take the bus."]},
-                {c:0, s:"In the corner by the stairs.", o:["In the corner by the stairs.","The third page of the document.","A reusable ink cartridge."]},
-                {c:2, s:"One that doesn't require much water.", o:["Whenever I sit at my desk.","Thanks—I just bought it.","One that doesn't require much water."]},
-                {c:1, s:"Did you buy anything?", o:["No, it wasn't in storage.","Did you buy anything?","Some old receipts."]},
-                {c:0, s:"Let me send you the link.", o:["Let me send you the link.","A broken power cable.","No, over ten minutes."]},
-                {c:0, s:"I've never used that model before.", o:["I've never used that model before.","Ten euros per hour.","We charge more for color photographs."]},
-                {c:1, s:"I'm free to walk now.", o:["A nearby lake.","I'm free to walk now.","No, I don't use a fitness tracker."]},
-                {c:1, s:"Great—I can't wait to use it.", o:["The news program on Channel Ten.","Great—I can't wait to use it.","The car dealership."]},
-                {c:0, s:"I just renewed my current lease.", o:["I just renewed my current lease.","It was a great show.","A standard rental application."]},
-                {c:2, s:"I just called maintenance.", o:["Yes, that's my Web site.","A five-kilometer run.","I just called maintenance."]},
-                {c:1, s:"Next week on Monday.", o:["In the storage closet.","Next week on Monday.","The new desk looks great!"]},
-                {c:2, s:"No, they still have another month to go.", o:["I just finished my conference presentation.","A lot of traffic in the evening.","No, they still have another month to go."]},
-                {c:0, s:"It's a week from tomorrow.", o:["It's a week from tomorrow.","Sure, I can take it.","The park next to the art museum."]},
-                {c:1, s:"The factory supervisor.", o:["I thought I saved the file.","The factory supervisor.","It's this Wednesday."]},
-                {c:2, s:"I have a performance scheduled with my band.", o:["Yes, that table lamp is quite nice.","Should we go left or right?","I have a performance scheduled with my band."]},
-                {c:1, s:"I haven't checked my e-mail.", o:["At the post office.","I haven't checked my e-mail.","A ticket for two o'clock, please."]},
-                {c:1, s:"The factory supervisor.", o:["I thought I saved the file.","The factory supervisor.","It's this Wednesday."]}
+                {c:0, s:"Why is there no flour on the shelf?", o:["Because it's out of stock.", "Those roses smell nice.", "No, the other cake."]},
+                {c:0, s:"When will the catering company arrive?", o:["At four o'clock.", "Thats a delicious flavor.", "Many vegetarian options."]},
+                {c:2, s:"When's the meeting scheduled to start?", o:["At a networking event.", "I started this job six years ago.", "Right after lunch."]},
+                {c:1, s:"How much will the repairs cost?", o:["I have two pairs of shoes.", "Around 200 dollars.", "The restaurant downtown."]},
+                {c:1, s:"You went to the dentist this morning, didn't you?", o:["Oh, I’ve already had breakfast.", "Yes, for an annual checkup.", "Let’s take the bus."]},
+                {c:0, s:"Where should we put the new printer?", o:["In the corner by the stairs.", "The third page of the document.", "A reusable ink cartridge."]},
+                {c:2, s:"What type of plant do you have in your office?", o:["Whenever I sit at my desk.", "Thanks—I just bought it.", "One that doesn't require much water."]},
+                {c:1, s:"There was a sale at the furniture store.", o:["No, it wasn't in storage.", "Did you buy anything?", "Some old receipts."]},
+                {c:0, s:"Can you show me how to submit a tech help ticket?", o:["Let me send you the link.", "A broken power cable.", "No, over ten minutes."]},
+                {c:0, s:"Where is the power button on this device?", o:["I've never used that model before.", "Ten euros per hour.", "We charge more for color photographs."]},
+                {c:1, s:"Do you want to take a walk now, or would later be better?", o:["A nearby lake.", "I'm free to walk now.", "No, I don't use a fitness tracker."]},
+                {c:1, s:"I ordered some new equipment for the factory.", o:["The news program on Channel Ten.", "Great—I can't wait to use it.", "The car dealership."]},
+                {c:0, s:"There's a nice place to rent on Mercer Street.", o:["I just renewed my current lease.", "It was a great show.", "A standard rental application."]},
+                {c:2, s:"Is the heating system working?", o:["Yes, that's my Web site.", "A five-kilometer run.", "I just called maintenance."]},
+                {c:2, s:"Isn't the roadwork in front of city hall finished yet?", o:["I just finished my conference presentation.", "A lot of traffic in the evening.", "No, they still have another month to go."]},
+                {c:0, s:"Who will lead the new-employee training today?", o:["we’re using a recorded video.", "yes, right after lunch.", "classroom 124"]},
+                {c:2, s:"Is the safety inspection scheduled for this month or next month?", o:["I thought I saved the file.", "The factory supervisor.", "It's this Wednesday."]},
+                {c:0, s:"When is the harvest festival taking place?", o:["It's a week from tomorrow.", "Sure, I can take it.", "The park next to the art museum."]},
+                {c:1, s:"Was your new laptop expensive?", o:["Do you have a new password?", "I had a discount coupon.", "On top of the cabinet."]},
+                {c:2, s:"Why don't we go on our camping trip next weekend?", o:["Yes, that table lamp is quite nice.", "Should we go left or right?", "I have a performance scheduled with my band."]},
+                {c:1, s:"The workshop for this afternoon was postponed, wasn't it?", o:["At the post office.", "I haven't checked my e-mail.", "A ticket for two o'clock, please."]},
+                {c:2, s:"How were our production figures last month?", o:["they produce electric cars.", "nice o’clock in the morning.", "we were closed down for a week."]},
+                {c:2, s:"When can I see the speech therapist?", o:["a one-hour session.", "just a microphone.", "how about tomorrow afternoon?"]},
+                {c:1, s:"Aren’t you picking up the clients from the airport?", o:["a product demonstration.", "no, I believe Tomoko is doing that.", "he prefers an aisle seat."]},
+                {c:2, s:"How was your morning client meeting?", o:["it’s great to meet you", "no, over in conference room two", "the contact is now officially signed"]}
             ]),
             4: generateData([
-                {c:1, s:"Because we drove.", o:["Yes, at one o'clock.","Because we drove.","I'd like to return this item, please."]},
-                {c:1, s:"From a supplier in California.", o:["Here's a basket you can use.","From a supplier in California.","That umbrella is a nice color."]},
-                {c:1, s:"Saturday is better.", o:["The Beachside Bistro.","Saturday is better.","A large plate of pasta."]},
-                {c:0, s:"No, you shouldn't have to wait long.", o:["No, you shouldn't have to wait long.","It's just under the desk.","Sure, I can do that for you."]},
-                {c:2, s:"Yes, they're on the lower floor.", o:["These socks are quite comfortable.","She teaches an exercise class.","Yes, they're on the lower floor."]},
-                {c:1, s:"You can hang your vest on that hook.", o:["Maksim does.","You can hang your vest on that hook.","No, I'm certain about that."]},
-                {c:2, s:"Yes, of course.", o:["Thank you, it was just renovated.","A free continental breakfast.","Yes, of course."]},
-                {c:2, s:"At a store in the city center.", o:["They'll give you a discount.","A pair of earrings.","At a store in the city center."]},
-                {c:0, s:"Actually, its in the morning.", o:["Actually, its in the morning.","That office is on the corner.","I have the train schedule here."]},
-                {c:2, s:"Certainly, I have some right here.", o:["It's for an award ceremony.","A charge for expedited delivery.","Certainly, I have some right here."]},
-                {c:1, s:"We already have one.", o:["Some customer reviews.","We already have one.","I take my coffee with sugar."]},
-                {c:2, s:"I read an online newspaper every morning.", o:["Are there any outdoor tables available?","The door to the building is still open.","I read an online newspaper every morning."]},
-                {c:2, s:"Do we have enough handouts?", o:["Probably in the conference room.","They were hired by our manager.","Do we have enough handouts?"]},
-                {c:0, s:"I'd have to look at the receipt.", o:["I'd have to look at the receipt.","The fitness center is across from the reception desk.","I'll be eating breakfast in my room."]},
-                {c:1, s:"Because I have a talent for it.", o:["Because I have a talent for it.","This is my new laptop.","Ifs on the other shelf."]},
-                {c:2, s:"Registration closed yesterday.", o:["The speech was inspiring.","Tunji updated the memo.","Registration closed yesterday."]},
-                {c:2, s:"I'm still waiting.", o:["A new phone number.","Yes, any available position.","I'm still waiting."]},
-                {c:2, s:"I'll buy mine at the door.", o:["The theater is on Johnson Avenue.","At seven thirty sharp.","I'll buy mine at the door."]},
-                {c:1, s:"A lot of good résumés have come in.", o:["A much higher salary.","A lot of good résumés have come in.","In the building across the street."]},
-                {c:2, s:"What did you think of it?", o:["Their contact information.","Early next week.","What did you think of it?"]},
-                {c:0, s:"Oh, I'm not a sales associate.", o:["Oh, I'm not a sales associate.","Pve read the information packet.","A very large uniform."]},
-                {c:1, s:"It's out of stock right now.", o:["Yes, it's a great place for hiking.","It's out of stock right now.","The warehouse on William Street."]},
-                {c:2, s:"A house on Maple Street.", o:["Sorry, I won't have time until tomorrow.","It has a very modern design.","A house on Maple Street."]},
-                {c:0, s:"We're waiting for confirmation.", o:["We're waiting for confirmation.","Ifs a great album, right?","Ab=jt six weeks ago."]}
+                {c:0, s:"Does the shop open on Sundays?", o:["Yes, at one o'clock.", "Because we drove.", "I'd like to return this item, please."]},
+                {c:1, s:"Where did these oranges come from?", o:["Here's a basket you can use.", "From a supplier in California.", "That umbrella is a nice color."]},
+                {c:1, s:"Should I make the dinner reservation for Friday or Saturday?", o:["The Beachside Bistro.", "Saturday is better.", "A large plate of pasta."]},
+                {c:0, s:"Will Dr. Ivanova be late today?", o:["No, you shouldn't have to wait long.", "It's just under the desk.", "Sure, I can do that for you."]},
+                {c:2, s:"Aren't there locker rooms at this gym?", o:["These socks are quite comfortable.", "She teaches an exercise class.", "Yes, they're on the lower floor."]},
+                {c:0, s:"Who needs a copy of my safety training certificate?", o:["Maksim does.", "You can hang your vest on that hook.", "No, I'm certain about that."]},
+                {c:2, s:"Could you phone Mr. Feras and let him know we're in the hotel lobby?", o:["Thank you, it was just renovated.", "A free continental breakfast.", "Yes, of course."]},
+                {c:2, s:"Where does she sell her handmade jewelry?", o:["They'll give you a discount.", "A pair of earrings.", "At a store in the city center."]},
+                {c:0, s:"You're taking a business class in the afternoon, aren't you?", o:["Actually, its in the morning.", "That office is on the corner.", "I have the train schedule here."]},
+                {c:2, s:"Could I see some sample floral arrangements before I order?", o:["It's for an award ceremony.", "A charge for expedited delivery.", "Certainly, I have some right here."]},
+                {c:1, s:"Don't you want to buy the black sofa?", o:["Some customer reviews.", "We already have one.", "I take my coffee with sugar."]},
+                {c:0, s:"Do you have this jacket in a larger size?", o:["Oh, I'm not a sales associate.", "Pve read the information packet.", "A very large uniform."]},
+                {c:2, s:"Where did you first learn about the job opening?", o:["Are there any outdoor tables available?", "The door to the building is still open.", "I read an online newspaper every morning."]},
+                {c:2, s:"Should I bring anything to the meeting?", o:["Probably in the conference room.", "They were hired by our manager.", "Do we have enough handouts?"]},
+                {c:0, s:"What was the total charge for the hotel stay?", o:["I'd have to look at the receipt.", "The fitness center is across from the reception desk.", "I'll be eating breakfast in my room."]},
+                {c:0, s:"Why did you pursue a career in video game design?", o:["Because I have a talent for it.", "This is my new laptop.", "Ifs on the other shelf."]},
+                {c:2, s:"I'd like to attend the job fair next month.", o:["The speech was inspiring.", "Tunji updated the memo.", "Registration closed yesterday."]},
+                {c:2, s:"Hasn't anyone called you back for the second interview yet?", o:["A new phone number.", "Yes, any available position.", "I'm still waiting."]},
+                {c:2, s:"How many tickets do we need for tonight's concert?", o:["The theater is on Johnson Avenue.", "At seven thirty sharp.", "I'll buy mine at the door."]},
+                {c:1, s:"When are they going to decide who to hire?", o:["A much higher salary.", "A lot of good résumés have come in.", "In the building across the street."]},
+                {c:2, s:"I had a chance to look over the contract this morning.", o:["Their contact information.", "Early next week.", "What did you think of it?"]},
+                {c:0, s:"How are the database updates coming along?", o:["I’ve been really busy with the Williams account", "some customer addresses", "she arrives on Wednesday"]},
+                {c:2, s:"When can I bring these boxes into the warehouse?", o:["the in a package", "thanks, I just bought it", "we’ll need to clear some space"]},
+                {c:1, s:"The market on fifth street is closed for a week.", o:["some new clothes", "is there another one nearby?", "the price has been marked down"]},
+                {c:1, s:"Does the company pay for professional-development courses?", o:["Insook helped develop a new product", "we do have a significant budget surplus", "(C) No information"]}
             ]),
             5: generateData([
-                {c:0, s:"Yes, it's for the whole department.", o:["Yes, it's for the whole department.","No, put it in the closet.","The rent is too high."]},
-                {c:2, s:"Because the artist is out of town.", o:["Red and yellow.","Please pick up the ladder.","Because the artist is out of town."]},
-                {c:2, s:"Mornings are usually better for me.", o:["My publisher requested edits.","Thanks for providing a solution.","Mornings are usually better for me."]},
-                {c:1, s:"That's a good idea.", o:["Doctor Park has an opening at three.","That's a good idea.","I prefer the red jacket."]},
-                {c:1, s:"No, I didn't know that.", o:["Forty dollars an hour.","No, I didn't know that.","I saw the piano recital."]},
-                {c:0, s:"The receptionist would know.", o:["The receptionist would know.","Desk lamps and headsets.","Twelve euros."]},
-                {c:2, s:"The warehouse on William Street.", o:["Yes, it's a great place for hiking.","It's out of stock right now.","The warehouse on William Street."]},
-                {c:2, s:"We decided to keep the old one.", o:["Ten packages a minute.","We met last Thursday.","We decided to keep the old one."]},
-                {c:1, s:"OK—I'll update your schedule.", o:["An awfully long commute.","OK—I'll update your schedule.","It's right down the hallway."]},
-                {c:0, s:"Yes—I'm planning a trip to Barcelona.", o:["Yes—I'm planning a trip to Barcelona.","This is your second time, isn't it?","Blueprints for a high-rise building."]},
-                {c:1, s:"I can do that.", o:["We're sharing a taxi to the airport.","I can do that.","A recent hiring decision."]},
-                {c:0, s:"The usual one.", o:["The usual one.","A one-way ticket.","Yes, you can use mine."]},
-                {c:1, s:"To the assembly plant in Dublin.", o:["Around five thirty this evening.","To the assembly plant in Dublin.","Just half the order."]},
-                {c:2, s:"Alberto did.", o:["I just ate.","It closes at five.","Alberto did."]},
-                {c:1, s:"A couple dozen, I think.", o:["I don't mind taking notes at the meeting.","A couple dozen, I think.","It's seven meters long."]},
-                {c:0, s:"We still have a few minutes.", o:["We still have a few minutes.","There's a map on the wall.","Two sessions per day."]},
-                {c:1, s:"One hundred dollars per day.", o:["To fix the vending machine.","One hundred dollars per day.","Next to the travel agency."]},
-                {c:2, s:"I'm not on the hiring team.", o:["Yes, we're extending our business hours.","Didn't Andrey direct the play?","I'm not on the hiring team."]},
-                {c:2, s:"The store has a new manager.", o:["There's a charging station in the cafe.","Yes, a three-bedroom apartment.","The store has a new manager."]},
-                {c:2, s:"He started that position in July.", o:["The news program is informative.","I have some free time tomorrow afternoon.","He started that position in July."]},
-                {c:2, s:"Did you see the cost estimate?", o:["Not too much wind, no.","Look in the filing cabinet.","Did you see the cost estimate?"]},
-                {c:0, s:"Oh, I'm not a sales associate.", o:["Oh, I'm not a sales associate.","Pve read the information packet.","A very large uniform."]},
-                {c:1, s:"It's out of stock right now.", o:["Yes, it's a great place for hiking.","It's out of stock right now.","The warehouse on William Street."]},
-                {c:2, s:"A house on Maple Street.", o:["Sorry, I won't have time until tomorrow.","It has a very modern design.","A house on Maple Street."]},
-                {c:0, s:"We're waiting for confirmation.", o:["We're waiting for confirmation.","Ifs a great album, right?","Ab=jt six weeks ago."]}
+                {c:0, s:"There's a meeting in the conference room soon, right?", o:["Yes, it's for the whole department.", "No, put it in the closet.", "The rent is too high."]},
+                {c:2, s:"Why hasn't the mural in the lobby been painted yet?", o:["Red and yellow.", "Please pick up the ladder.", "Because the artist is out of town."]},
+                {c:2, s:"Do you prefer writing in the morning or the afternoon?", o:["My publisher requested edits.", "Thanks for providing a solution.", "Mornings are usually better for me."]},
+                {c:1, s:"I suggest we paint the waiting room light blue.", o:["Doctor Park has an opening at three.", "That's a good idea.", "I prefer the red jacket."]},
+                {c:1, s:"Did you know that the music school is closed on Sundays?", o:["Forty dollars an hour.", "No, I didn't know that.", "I saw the piano recital."]},
+                {c:0, s:"How do I find the office manager?", o:["The receptionist would know.", "Desk lamps and headsets.", "Twelve euros."]},
+                {c:1, s:"When did you place the order for the lumber?", o:["Yes, it's a great place for hiking.", "It's out of stock right now.", "The warehouse on William Street."]},
+                {c:2, s:"Where is the new packaging machine?", o:["Ten packages a minute.", "We met last Thursday.", "We decided to keep the old one."]},
+                {c:1, s:"111 be out of the office this afternoon.", o:["An awfully long commute.", "OK—I'll update your schedule.", "It's right down the hallway."]},
+                {c:0, s:"Are you taking a vacation once this project is over?", o:["Yes—I'm planning a trip to Barcelona.", "This is your second time, isn't it?", "Blueprints for a high-rise building."]},
+                {c:1, s:"Let's post the sales report to our team's Web page.", o:["We're sharing a taxi to the airport.", "I can do that.", "A recent hiring decision."]},
+                {c:0, s:"Which airline are you planning on using?", o:["The usual one.", "A one-way ticket.", "Yes, you can use mine."]},
+                {c:1, s:"Where's this shipment of parts being sent?", o:["Around five thirty this evening.", "To the assembly plant in Dublin.", "Just half the order."]},
+                {c:2, s:"Who paid for lunch?", o:["I just ate.", "It closes at five.", "Alberto did."]},
+                {c:1, s:"How many employees work in your department?", o:["I don't mind taking notes at the meeting.", "A couple dozen, I think.", "It's seven meters long."]},
+                {c:0, s:"We should leave for our training course soon, shouldn't we?", o:["We still have a few minutes.", "There's a map on the wall.", "Two sessions per day."]},
+                {c:1, s:"Isn't there a limit on travel expenses?", o:["To fix the vending machine.", "One hundred dollars per day.", "Next to the travel agency."]},
+                {c:2, s:"When should I tell the director that I'm interested in the management position?", o:["Yes, we're extending our business hours.", "Didn't Andrey direct the play?", "I'm not on the hiring team."]},
+                {c:2, s:"The layout of the footwear department has changed.", o:["There's a charging station in the cafe.", "Yes, a three-bedroom apartment.", "The store has a new manager."]},
+                {c:1, s:"Can you look at this month's revenue report?", o:["The news program is informative.", "I have some free time tomorrow afternoon.", "He started that position in July."]},
+                {c:2, s:"Why haven't the windows been replaced yet?", o:["Not too much wind, no.", "Look in the filing cabinet.", "Did you see the cost estimate?"]},
+                {c:2, s:"Isn’t you suitcase going to be heavier than the permitted weight?", o:["the building permit arrived today", "there are seats in the lobby", "I’ll have to pay a little bit extra."]},
+                {c:0, s:"Who manufactures the engines for our machines?", o:["Koji is in charge of supplier contracts", "I’m sorry- the storage room is full", "that’s cargo airplane"]},
+                {c:0, s:"Should we meet at the department store on fifth street or the one on Grover Lane?", o:["let’s ask Patricia first", "no, I don’t mind", "how much does it cost?"]},
+                {c:2, s:"Which band is playing at the club tonight?", o:["there’s always a comedy show on Thursday night", "yes, I’ve played the piano for many years", "their number one hit"]}
             ])
         };
 
@@ -185,6 +216,7 @@
         window.startTest = function(num) {
             currentTestNum = num;
             mainQueue = testBank[num];
+            if(!mainQueue || mainQueue.length === 0) { alert("데이터가 없습니다."); return; }
             wrongQueue = [];
             isReviewMode = false;
             currentIdx = 0;
@@ -216,9 +248,7 @@
 
         window.handlePlay = function() {
             audio.currentTime = 0;
-            audio.play().catch(e => {
-                document.getElementById('audio-status').innerText = "Audio Not Found";
-            });
+            audio.play().catch(e => { document.getElementById('audio-status').innerText = "File Not Found"; });
             document.getElementById('play-btn').innerHTML = '<i class="fas fa-volume-up"></i>';
             document.getElementById('audio-status').innerText = "Playing...";
             audio.ontimeupdate = () => {
@@ -249,7 +279,7 @@
                 const btn = document.getElementById(`btn-${choice}`);
                 btn.classList.replace('bg-slate-800', 'bg-rose-600');
                 btn.classList.replace('border-slate-700', 'border-rose-400');
-                btn.querySelector('.btn-label').innerText = data.script;  // 스크립트만 표시
+                btn.querySelector('.btn-label').innerText = data.options[choice];
                 
                 if (!isReviewMode) {
                     if(!wrongQueue.find(i => i.id === data.id)) wrongQueue.push(data);
