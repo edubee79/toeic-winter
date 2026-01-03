@@ -2,11 +2,20 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shadowing Master | 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Core Verbs 50 | 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .word-card { perspective: 1000px; }
+        .card-inner { transition: transform 0.6s; transform-style: preserve-3d; cursor: pointer; position: relative; height: 320px; }
+        .card-inner.is-flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 2.5rem; padding: 2rem; }
+        .card-back { transform: rotateY(180deg); background-color: #4f46e5; color: white; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body class="bg-slate-900 text-white min-h-screen font-pretendard">
 
@@ -14,264 +23,249 @@
         <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mb-6 shadow-2xl animate-bounce">
             <i class="fas fa-volume-up text-3xl text-white"></i>
         </div>
-        <h2 class="text-2xl font-black mb-2 tracking-tighter">학습 준비 완료</h2>
-        <p class="text-slate-400 font-bold text-sm mb-8">원어민 발음을 듣기 위해<br>아래 버튼을 눌러주세요.</p>
-        <button id="audio-unlock-btn" class="w-full max-w-xs py-5 bg-white text-slate-900 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all">스피커 활성화 후 시작</button>
+        <h2 class="text-2xl font-black mb-2 tracking-tighter">오디오 활성화</h2>
+        <p class="text-slate-400 font-bold text-sm mb-8">모바일 기기에서 소리를 듣기 위해<br>아래 버튼을 먼저 눌러주세요.</p>
+        <button id="unlock-btn" class="w-full max-w-xs py-5 bg-white text-slate-900 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all">스피커 켜고 시작하기</button>
     </div>
 
     <nav class="p-6 flex justify-between items-center max-w-md mx-auto">
-        <button onclick="location.href='index.html'" class="text-slate-400"><i class="fas fa-arrow-left text-xl"></i></button>
-        <h1 id="nav-title" class="font-black text-lg tracking-tighter italic text-indigo-400 uppercase">SHADOWING</h1>
+        <button onclick="location.reload()" class="text-slate-400"><i class="fas fa-rotate-left text-xl"></i></button>
+        <h1 class="font-black text-lg tracking-tighter italic text-indigo-400 uppercase">VOCA MASTER</h1>
         <div class="w-8"></div>
     </nav>
 
-    <main class="max-w-md mx-auto px-6 pb-20 text-center">
-        <div class="mb-10 flex justify-between items-end text-left">
-            <div>
-                <p class="text-indigo-500 text-[10px] font-black uppercase tracking-widest mb-1">Step 02. Shadowing</p>
-                <h2 class="text-2xl font-black italic">Listen & Repeat</h2>
+    <main id="main-content" class="max-w-md mx-auto px-6 pb-20">
+        <div id="step1" class="text-center">
+            <div class="mb-10 text-left">
+                <p class="text-indigo-500 text-[10px] font-black uppercase tracking-widest mb-1">Step 01. Classification</p>
+                <h2 class="text-2xl font-black italic">Do you know this?</h2>
             </div>
-            <div class="text-right">
-                <span id="progress-text" class="text-indigo-400 font-black text-2xl">1</span><span id="total-text" class="text-slate-700 font-bold text-lg"> / --</span>
+            <div class="bg-white rounded-[3rem] p-12 shadow-2xl mb-10 border border-white/10 flex flex-col items-center justify-center min-h-[300px]">
+                <span id="sortWord" class="text-5xl font-black text-slate-900 tracking-tighter italic">Ready</span>
+                <div class="mt-8 text-slate-300 font-bold text-sm"><span id="sortCount" class="text-indigo-600">0</span> / 50</div>
             </div>
-        </div>
-
-        <div class="bg-white rounded-[3rem] p-10 shadow-2xl mb-10 border border-white/10 relative overflow-hidden min-h-[250px] flex items-center justify-center">
-            <div id="sentence-box" class="blur-md transition-all duration-700">
-                <p id="target-sentence" class="text-slate-900 font-black text-2xl leading-tight italic mb-4 tracking-tight"></p>
-                <p id="sentence-mean" class="text-slate-400 font-bold text-sm"></p>
-            </div>
-            
-            <div id="play-overlay" class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm">
-                <button onclick="playAudio()" class="w-24 h-24 bg-indigo-600 rounded-full shadow-2xl flex items-center justify-center">
-                    <i class="fas fa-play text-white text-4xl ml-1"></i>
-                </button>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="sortWordAction(false)" class="py-6 bg-slate-800 text-slate-400 rounded-[2rem] text-xl font-black active:scale-95 transition">몰라요</button>
+                <button onclick="sortWordAction(true)" class="py-6 bg-indigo-600 text-white rounded-[2rem] text-xl font-black shadow-lg active:scale-95 transition">알아요</button>
             </div>
         </div>
 
-        <div class="space-y-6">
-            <div id="status-msg" class="text-slate-500 font-black text-[10px] uppercase tracking-widest">중앙 버튼을 눌러 소리를 들으세요</div>
-            <button id="mic-btn" disabled onclick="startListening()" class="w-full py-8 bg-slate-800 text-slate-600 rounded-[2.5rem] text-xl font-black transition-all">
-                <i class="fas fa-microphone mr-3"></i> 소리를 먼저 들으세요
-            </button>
-            <p id="user-transcript" class="text-indigo-400 font-bold italic text-sm min-h-[1.5rem]"></p>
+        <div id="step2" class="hidden text-center">
+            <div class="mb-10 text-left flex justify-between items-end">
+                <div>
+                    <p class="text-indigo-500 text-[10px] font-black uppercase tracking-widest mb-1">Step 02. Intensive Learning</p>
+                    <h2 class="text-2xl font-black italic">Flash Cards</h2>
+                </div>
+                <div id="remaining-count" class="text-indigo-400 font-black text-xl">0</div>
+            </div>
+            <div class="word-card mb-10">
+                <div id="cardInner" class="card-inner w-full shadow-2xl" onclick="toggleFlip()">
+                    <div class="card-front bg-white border border-slate-100">
+                        <span id="flashWord" class="text-5xl font-black text-slate-900 tracking-tighter italic">Word</span>
+                    </div>
+                    <div class="card-back flex-col">
+                        <span id="flashMean" class="text-3xl font-black mb-4">뜻</span>
+                        <p id="flashEx" class="italic text-indigo-100 text-sm leading-snug px-6">Example Sentence</p>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <button onclick="markAsMemorized()" class="w-full py-6 bg-emerald-500 text-white rounded-[2rem] text-xl font-black shadow-lg active:scale-95 transition">외웠습니다 (삭제)</button>
+                <button onclick="nextLoop()" class="w-full py-6 bg-slate-800 text-white rounded-[2rem] text-xl font-black active:scale-95 transition">다음에 다시 (반복)</button>
+            </div>
+        </div>
+
+        <div id="step3" class="hidden">
+            <div class="mb-10 text-left">
+                <p class="text-indigo-500 text-[10px] font-black uppercase tracking-widest mb-1">Step 03. Final Test</p>
+                <h2 class="text-2xl font-black italic">Select the Meaning</h2>
+            </div>
+            <div class="bg-white rounded-[3rem] p-10 shadow-2xl mb-8 text-center">
+                <span id="quizWord" class="text-4xl font-black text-indigo-600 italic tracking-tighter">Quiz</span>
+            </div>
+            <div id="quizOptions" class="space-y-3"></div>
+        </div>
+
+        <div id="result-screen" class="hidden text-center py-10">
+            <div class="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                <i class="fas fa-trophy text-4xl text-white"></i>
+            </div>
+            <h2 class="text-3xl font-black mb-2">학습 완료!</h2>
+            <p id="finalScore" class="text-indigo-400 font-black text-5xl mb-10">0점</p>
+            <button onclick="location.reload()" class="w-full py-5 bg-white text-slate-900 rounded-2xl font-black text-lg active:scale-95 transition">처음으로</button>
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <script>
+        const verbs50 = [
+            {word: "accommodate", mean: "수용하다, 편의를 도모하다", ex: "The hotel can accommodate up to 500 guests."},
+            {word: "address", mean: "다루다, 처리하다", ex: "We need to address the technical issues immediately."},
+            {word: "allocate", mean: "할당하다, 배정하다", ex: "The board allocated funds for the new project."},
+            {word: "anticipate", mean: "예상하다, 기대하다", ex: "We anticipate a significant increase in sales."},
+            {word: "approve", mean: "승인하다", ex: "The manager approved the travel expenses."},
+            {word: "assign", mean: "배정하다, 맡기다", ex: "The supervisor assigned a new task to the team."},
+            {word: "assure", mean: "보장하다, 확신시키다", ex: "I assure you that the order will be delivered on time."},
+            {word: "attract", mean: "끌어들이다, 유인하다", ex: "The advertisement attracted many customers."},
+            {word: "authorize", mean: "허가하다, 권한을 주다", ex: "Only authorized personnel can enter this area."},
+            {word: "collaborate", mean: "협력하다", ex: "We collaborated with the marketing team."},
+            {word: "comply", mean: "준수하다 (with)", ex: "Must comply with safety regulations."},
+            {word: "confirm", mean: "확인하다, 확정하다", ex: "Please confirm your reservation."},
+            {word: "contribute", mean: "기여하다, 공헌하다", ex: "Everyone contributed to the success."},
+            {word: "convey", mean: "전달하다", ex: "Conveyed my gratitude to the staff."},
+            {word: "delegate", mean: "위임하다", ex: "A leader knows how to delegate tasks."},
+            {word: "demonstrate", mean: "입증하다, 시연하다", ex: "Demonstrate the effectiveness of the product."},
+            {word: "determine", mean: "결정하다, 알아내다", ex: "Price is determined by demand."},
+            {word: "distribute", mean: "배포하다", ex: "Brochures were distributed to all."},
+            {word: "ensure", mean: "보장하다, 확실히 하다", ex: "Ensure that all doors are locked."},
+            {word: "evaluate", mean: "평가하다", ex: "Performance is evaluated annually."},
+            {word: "exceed", mean: "초과하다", ex: "Costs exceeded our budget."},
+            {word: "facilitate", mean: "용이하게 하다", ex: "Software will facilitate communication."},
+            {word: "finalize", mean: "마무리 짓다", ex: "Finalize the contract by Friday."},
+            {word: "fulfill", mean: "충족시키다, 이행하다", ex: "Fulfill all the requirements."},
+            {word: "generate", mean: "발생시키다, 창출하다", ex: "Generated a lot of interest."},
+            {word: "implement", mean: "시행하다, 실시하다", ex: "Policy will be implemented next month."},
+            {word: "indicate", mean: "나타내다", ex: "Surveys indicate high satisfaction."},
+            {word: "inspect", mean: "점검하다", ex: "Facility is inspected once a year."},
+            {word: "install", mean: "설치하다", ex: "Install a new security system."},
+            {word: "instruct", mean: "지시하다", ex: "Instructs users on setup."},
+            {word: "investigate", mean: "조사하다", ex: "Investigating the cause of the fire."},
+            {word: "maintain", mean: "유지하다", ex: "Maintain a healthy balance."},
+            {word: "modify", mean: "수정하다, 변경하다", ex: "Modify the original plan."},
+            {word: "monitor", mean: "감시하다, 관찰하다", ex: "Monitors the temperature."},
+            {word: "notify", mean: "통지하다, 알리다", ex: "Notify us of any changes."},
+            {word: "obtain", mean: "획득하다, 얻다", ex: "Obtain the form at the desk."},
+            {word: "occupy", mean: "점유하다, 차지하다", ex: "Rooms are currently occupied."},
+            {word: "outline", mean: "개요를 서술하다", ex: "Proposal outlines the goals."},
+            {word: "participate", mean: "참여하다", ex: "Participated in the seminar."},
+            {word: "postpone", mean: "연기하다", ex: "Postponed until next week."},
+            {word: "proceed", mean: "진행하다", ex: "Proceeding as planned."},
+            {word: "promote", mean: "승진/홍보하다", ex: "She was promoted to manager."},
+            {word: "purchase", mean: "구매하다", ex: "Can be purchased online."},
+            {word: "rectify", mean: "바로잡다", ex: "Take steps to rectify the error."},
+            {word: "reflect", mean: "반영하다", ex: "Reflects current conditions."},
+            {word: "relocate", mean: "이전하다", ex: "Relocating headquarters to Seoul."},
+            {word: "request", mean: "요청하다", ex: "Request a refund within 30 days."},
+            {word: "respond", mean: "응답하다", ex: "Respond to your inquiry."},
+            {word: "submit", mean: "제출하다", ex: "Submit application by deadline."},
+            {word: "verify", mean: "확인하다", ex: "Verify your identity."}
+        ];
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8",
-            authDomain: "eduthot-fb088.firebaseapp.com",
-            projectId: "eduthot-fb088",
-            storageBucket: "eduthot-fb088.firebasestorage.app",
-            messagingSenderId: "919552710378",
-            appId: "1:919552710378:web:7ba72ea2d195e092f8a993"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        const allShadowData = {
-            1: [
-                {en: "Some people are gathered around a table.", ko: "사람들이 테이블에 둘러앉아 있다."},
-                {en: "He is leaning against the railing.", ko: "그는 난간에 기대어 있다."},
-                {en: "A woman is reaching for an item.", ko: "여자가 물건을 잡으려고 손을 뻗고 있다."},
-                {en: "They are facing each other.", ko: "그들이 서로 마주 보고 있다."},
-                {en: "He is adjusting his glasses.", ko: "그가 안경을 고쳐 쓰고 있다."},
-                {en: "She is browsing in a bookstore.", ko: "그녀가 서점에서 책을 구경하고 있다."},
-                {en: "A man is sweeping the pavement.", ko: "남자가 보도를 쓸고 있다."},
-                {en: "He is gesturing with his hands.", ko: "그가 손으로 몸짓을 하고 있다."},
-                {en: "They are strolling along the walkway.", ko: "그들이 산책로를 따라 걷고 있다."},
-                {en: "She is sorting through some papers.", ko: "그녀가 종이들을 분류하고 있다."},
-                {en: "A person is pouring a beverage into a glass.", ko: "음료를 잔에 따르고 있다."},
-                {en: "He is examining some documents.", ko: "그는 문서를 검토하고 있다."},
-                {en: "They are shaking hands with each other.", ko: "그들은 서로 악수하고 있다."},
-                {en: "She is pointing at a screen.", ko: "그녀는 화면을 가리키고 있다."},
-                {en: "The man is lifting a box.", ko: "남자가 상자를 들어 올리고 있다."},
-                {en: "He is taking a photograph of the scenery.", ko: "그는 풍경 사진을 찍고 있다."},
-                {en: "They are applauding the performance.", ko: "그들이 공연에 박수를 치고 있다."},
-                {en: "She is wrapping a gift.", ko: "그녀가 선물을 포장하고 있다."},
-                {en: "A man is typing on a keyboard.", ko: "남자가 키보드로 타이핑을 하고 있다."},
-                {en: "They are waiting in line.", ko: "그들이 줄을 서서 기다리고 있다."},
-                {en: "He is pushing a cart through the aisle.", ko: "그가 통로에서 카트를 밀고 있다."},
-                {en: "She is drinking from a water fountain.", ko: "그녀가 식수대에서 물을 마시고 있다."},
-                {en: "They are discussing some information.", ko: "그들이 정보를 논의하고 있다."},
-                {en: "A man is boarding a bus.", ko: "남자가 버스에 올라타고 있다."},
-                {en: "He is checking his reflection in the mirror.", ko: "그가 거울에 비친 모습을 확인하고 있다."},
-                {en: "She is wiping the counter with a cloth.", ko: "그녀가 천으로 카운터를 닦고 있다."},
-                {en: "They are hiking up a mountain.", ko: "그들이 산을 등반하고 있다."},
-                {en: "He is repairing a bicycle.", ko: "그가 자전거를 수리하고 있다."},
-                {en: "She is handing a document to her colleague.", ko: "그녀가 동료에게 서류를 건네고 있다."},
-                {en: "A man is tying his shoelaces.", ko: "남자가 신발끈을 묶고 있다."},
-                {en: "They are sitting across from each other.", ko: "그들이 서로 마주 보고 앉아 있다."},
-                {en: "He is reading a menu.", ko: "그는 메뉴판을 읽고 있다."},
-                {en: "She is carrying a briefcase.", ko: "그녀가 서류 가방을 들고 있다."}
-            ],
-            2: [
-                {en: "Merchandise is being displayed in the shop.", ko: "상품이 가게에 전시되고 있다."},
-                {en: "A plant has been placed in the corner.", ko: "식물이 구석에 놓여 있다."},
-                {en: "The vehicles are parked in a row.", ko: "차량들이 한 줄로 주차되어 있다."},
-                {en: "Some boxes are stacked on top of each other.", ko: "상자들이 겹겹이 쌓여 있다."},
-                {en: "The curtains have been drawn shut.", ko: "커튼이 쳐져 있다."},
-                {en: "Some steps lead up to a building.", ko: "계단이 건물로 이어져 있다."},
-                {en: "The tables are unoccupied.", ko: "테이블이 비어 있다."},
-                {en: "The path is shaded by some trees.", ko: "길이 나무에 의해 그늘져 있다."},
-                {en: "Equipment is being set up in the lab.", ko: "실험실에 장비가 설치되고 있다."},
-                {en: "The boat is docked at the pier.", ko: "배가 부두에 정박해 있다."},
-                {en: "Shadows are being cast on the ground.", ko: "바닥에 그림자가 드리워져 있다."},
-                {en: "The shelves are filled with books.", ko: "선반이 책으로 가득 차 있다."},
-                {en: "A clock is hanging on the wall.", ko: "시계가 벽에 걸려 있다."},
-                {en: "The outdoor chairs are folded.", ko: "야외용 의자들이 접혀 있다."},
-                {en: "The lawn is being mowed.", ko: "잔디가 깎이고 있다."},
-                {en: "Traffic lights are positioned above the street.", ko: "신호등이 도로 위에 위치해 있다."},
-                {en: "Signs are posted on the fence.", ko: "표지판이 울타리에 붙어 있다."},
-                {en: "A rug has been spread on the floor.", ko: "카펫이 바닥에 깔려 있다."},
-                {en: "The fountain is spraying water into the air.", ko: "분수가 공중으로 물을 뿜고 있다."},
-                {en: "Some bicycles are leaned against a wall.", ko: "자전거들이 벽에 기대어 있다."},
-                {en: "A statue is located in the center of the park.", ko: "조각상이 공원 중앙에 위치해 있다."},
-                {en: "The balcony overlooks the ocean.", ko: "발코니에서 바다가 내다보인다."},
-                {en: "Baskets are hanging from the ceiling.", ko: "바구니들이 천장에 매달려 있다."},
-                {en: "Boxes are being loaded onto a truck.", ko: "상자들이 트럭에 실리고 있다."},
-                {en: "The doorway is blocked by a ladder.", ko: "출입구가 사다리에 의해 막혀 있다."},
-                {en: "Papers are scattered on the desk.", ko: "종이들이 책상 위에 흩어져 있다."},
-                {en: "A fence runs along the perimeter.", ko: "울타리가 주변을 따라 둘러쳐져 있다."},
-                {en: "The lamp is switched on.", ko: "램프가 켜져 있다."},
-                {en: "The seats are arranged in rows.", ko: "좌석들이 여러 줄로 배열되어 있다."},
-                {en: "A bridge connects the two islands.", ko: "다리가 두 섬을 연결하고 있다."},
-                {en: "Windows are being cleaned.", ko: "창문들이 닦이고 있다."},
-                {en: "Flower pots decorate the windowsills.", ko: "화분들이 창틀을 장식하고 있다."},
-                {en: "The garage door is closed.", ko: "차고 문이 닫혀 있다."}
-            ],
-            3: [
-                {en: "A reflection is visible in the window.", ko: "창문에 비친 모습이 보인다."},
-                {en: "Construction work is in progress.", ko: "공사가 진행 중이다."},
-                {en: "The containers have been emptied.", ko: "용기들이 비워져 있다."},
-                {en: "The labels are attached to the jars.", ko: "라벨이 병에 붙어 있다."},
-                {en: "A bridge spans a waterway.", ko: "다리가 수로를 가로지르고 있다."},
-                {en: "The floor is being mopped.", ko: "바닥을 대걸레로 닦고 있다."},
-                {en: "Items have been arranged in a display case.", ko: "물건들이 진열장에 배치되어 있다."},
-                {en: "Potted plants are lined up on a ledge.", ko: "화분들이 선반 위에 줄지어 있다."},
-                {en: "The ceiling is under repair.", ko: "천장이 수리 중이다."},
-                {en: "The road is being repaved.", ko: "도로가 재포장되고 있다."},
-                {en: "Some tools are scattered on the workbench.", ko: "공구들이 작업대에 흩어져 있다."},
-                {en: "A rug is being rolled up.", ko: "카페트가 말리고 있다."},
-                {en: "The door has been left open.", ko: "문이 열린 채로 있다."},
-                {en: "Scaffolding has been erected against the wall.", ko: "벽에 비계가 설치되어 있다."},
-                {en: "A basket is being filled with fruit.", ko: "바구니에 과일이 담기고 있다."},
-                {en: "The awning provides shade for the diners.", ko: "차양이 식사하는 사람들에게 그늘을 제공한다."},
-                {en: "Some tiles are being replaced.", ko: "타일이 교체되고 있다."},
-                {en: "A walkway leads to the beach.", ko: "보도가 해변으로 이어진다."},
-                {en: "Boats are anchored in the harbor.", ko: "배들이 항구에 정박해 있다."},
-                {en: "Trees line both sides of the street.", ko: "나무들이 도로 양쪽에 줄지어 있다."},
-                {en: "The stairs are made of stone.", ko: "계단은 돌로 만들어져 있다."},
-                {en: "An umbrella is providing shade.", ko: "우산이 그늘을 만들어주고 있다."},
-                {en: "The building is surrounded by water.", ko: "건물이 물로 둘러싸여 있다."},
-                {en: "A package is being delivered.", ko: "택배가 배달되고 있다."},
-                {en: "Flowers are blooming in the garden.", ko: "정원에 꽃들이 피어 있다."},
-                {en: "The painting is framed.", ko: "그림이 액자에 끼워져 있다."},
-                {en: "A path winds through the forest.", ko: "길이 숲속을 구부러져 이어져 있다."},
-                {en: "The stadium is packed with people.", ko: "경기장이 사람들로 가득 차 있다."},
-                {en: "A banner is displayed above the entrance.", ko: "현수막이 입구 위에 게시되어 있다."},
-                {en: "The roof is flat.", ko: "지붕이 평평하다."},
-                {en: "The gate is locked.", ko: "대문이 잠겨 있다."},
-                {en: "Supplies are being unpacked.", ko: "물품들이 풀리고 있다."},
-                {en: "Water is flowing from a pipe.", ko: "파이프에서 물이 흐르고 있다."},
-                {en: "A ladder is leaning against a tree.", ko: "사다리가 나무에 기대어 있다."}
-            ]
-        };
-
-        let currentSession = [];
-        let currentIndex = 0;
+        let unknownWords = [], nextLoopWords = [], quizWords = [];
+        let sortIdx = 0, quizIdx = 0, correctCount = 0;
         const synth = window.speechSynthesis;
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'en-US';
 
-        document.getElementById('audio-unlock-btn').addEventListener('click', function() {
-            const silent = new SpeechSynthesisUtterance(" ");
+        // 모바일 오디오 잠금 해제 핵심 로직
+        document.getElementById('unlock-btn').addEventListener('click', function() {
+            // 1. 무음 발화로 오디오 컨텍스트 활성화 (iOS 핵심)
+            const silent = new SpeechSynthesisUtterance("Welcome");
+            silent.volume = 0;
+            silent.rate = 1;
             synth.speak(silent);
+
+            // 2. 화면 전환
             document.getElementById('start-overlay').classList.add('hidden');
-            initSession();
+            showSortWord();
         }, { once: true });
 
-        function initSession() {
-            const day = localStorage.getItem('shadow_day') || 1;
-            document.getElementById('nav-title').innerText = `DAY ${day} SHADOWING`;
-            currentSession = [...allShadowData[day]];
-            document.getElementById('total-text').innerText = ` / ${currentSession.length}`;
-            loadSentence();
+        function showSortWord() {
+            document.getElementById('sortWord').innerText = verbs50[sortIdx].word;
+            document.getElementById('sortCount').innerText = sortIdx + 1;
         }
 
-        function loadSentence() {
-            if(currentIndex >= currentSession.length) { finishShadowing(); return; }
-            const data = currentSession[currentIndex];
-            document.getElementById('target-sentence').innerText = data.en;
-            document.getElementById('sentence-mean').innerText = data.ko;
-            document.getElementById('progress-text').innerText = currentIndex + 1;
-            document.getElementById('sentence-box').classList.add('blur-md');
-            document.getElementById('play-overlay').style.display = 'flex';
-            document.getElementById('status-msg').innerText = "재생 버튼을 누르세요";
-            
-            const micBtn = document.getElementById('mic-btn');
-            micBtn.disabled = true;
-            micBtn.classList.replace('bg-indigo-600', 'bg-slate-800');
-            micBtn.innerText = "소리를 먼저 들으세요";
-            document.getElementById('user-transcript').innerText = "";
+        window.sortWordAction = (known) => {
+            if (!known) unknownWords.push(verbs50[sortIdx]);
+            sortIdx++;
+            if (sortIdx < verbs50.length) showSortWord();
+            else startStep2();
+        };
+
+        function startStep2() {
+            if (unknownWords.length === 0) { startStep3(); return; }
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            showFlashCard();
         }
 
-        window.playAudio = function() {
+        function showFlashCard() {
+            const word = unknownWords[0];
+            document.getElementById('flashWord').innerText = word.word;
+            document.getElementById('flashMean').innerText = word.mean;
+            document.getElementById('flashEx').innerText = word.ex;
+            document.getElementById('cardInner').classList.remove('is-flipped');
+            document.getElementById('remaining-count').innerText = unknownWords.length;
+        }
+
+        window.toggleFlip = () => {
+            const card = document.getElementById('cardInner');
+            if(!card.classList.contains('is-flipped')) {
+                card.classList.add('is-flipped');
+                // 카드 뒤집힐 때 발음 재생
+                speak(document.getElementById('flashWord').innerText);
+            }
+        };
+
+        function speak(text) {
+            // 이전 재생 취소
             synth.cancel();
-            const utterance = new SpeechSynthesisUtterance(currentSession[currentIndex].en);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.8;
-            utterance.onend = function() {
-                document.getElementById('sentence-box').classList.remove('blur-md');
-                document.getElementById('play-overlay').style.display = 'none';
-                document.getElementById('status-msg').innerText = "이제 따라 말하세요!";
-                const micBtn = document.getElementById('mic-btn');
-                micBtn.disabled = false;
-                micBtn.classList.replace('bg-slate-800', 'bg-indigo-600');
-                micBtn.innerText = "마이크 누르고 따라하기";
-            };
-            synth.speak(utterance);
-        };
-
-        window.startListening = function() {
-            recognition.start();
-            document.getElementById('mic-btn').innerText = "인식 중...";
-            document.getElementById('mic-btn').classList.replace('bg-indigo-600', 'bg-rose-500');
-        };
-
-        recognition.onresult = (event) => {
-            const result = event.results[0][0].transcript.toLowerCase().replace(/[.,!?]/g, "");
-            const target = currentSession[currentIndex].en.toLowerCase().replace(/[.,!?]/g, "");
-            document.getElementById('user-transcript').innerText = `내 발음: "${result}"`;
-
-            const targetWords = target.split(' ').filter(w => w.length > 3);
-            const isPass = result.includes(target) || targetWords.every(w => result.includes(w));
-
-            if (isPass) {
-                currentIndex++;
-                setTimeout(() => { alert("Great!"); loadSentence(); }, 300);
-            } else {
-                // [수정] 실패 시 알림 후 소리 다시 재생
-                alert("아쉬워요! 다시 한 번 듣고 따라해 보세요.");
-                playAudio(); // 소리 다시 재생 함수 호출
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            u.rate = 0.8;
+            
+            // 모바일 에러 방지를 위한 처리
+            try {
+                synth.speak(u);
+            } catch (e) {
+                console.error("Audio play failed", e);
             }
-        };
+        }
 
-        async function finishShadowing() {
-            const user = JSON.parse(localStorage.getItem('toeic_user'));
-            const day = localStorage.getItem('shadow_day') || 1;
-            if(user) {
-                await setDoc(doc(db, "Winter_Users", user.userId), {
-                    [`shadow_day_${day}_pass`]: true,
-                    lastShadowDate: new Date().toISOString()
-                }, { merge: true });
+        window.markAsMemorized = () => { unknownWords.shift(); checkCycle(); };
+        window.nextLoop = () => { nextLoopWords.push(unknownWords.shift()); checkCycle(); };
+
+        function checkCycle() {
+            if (unknownWords.length === 0) {
+                if (nextLoopWords.length === 0) startStep3();
+                else { unknownWords = [...nextLoopWords]; nextLoopWords = []; showFlashCard(); }
+            } else showFlashCard();
+        }
+
+        function startStep3() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+            quizWords = [...verbs50].sort(() => 0.5 - Math.random()).slice(0, 20);
+            showQuiz();
+        }
+
+        function showQuiz() {
+            const correct = quizWords[quizIdx];
+            document.getElementById('quizWord').innerText = correct.word;
+            let options = [correct.mean];
+            while(options.length < 4) {
+                let r = verbs50[Math.floor(Math.random()*verbs50.length)].mean;
+                if(!options.includes(r)) options.push(r);
             }
-            alert(`${day}일차 전체 문장 학습 완료!`);
-            location.href = "index.html";
+            options.sort(() => 0.5 - Math.random());
+            const container = document.getElementById('quizOptions');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full py-5 px-8 bg-slate-800 text-white border border-white/5 rounded-2xl font-bold text-left active:bg-indigo-600 transition-all";
+                btn.innerText = opt;
+                btn.onclick = () => {
+                    if(opt === correct.mean) { correctCount++; }
+                    else { alert("오답! 정답: " + correct.mean); }
+                    quizIdx++;
+                    if(quizIdx < quizWords.length) showQuiz();
+                    else finishQuiz();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function finishQuiz() {
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('finalScore').innerText = Math.round((correctCount/20)*100) + "점";
         }
     </script>
 </body>
