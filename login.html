@@ -26,27 +26,31 @@
             <form id="login-form" class="space-y-5">
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2 ml-1">Class Select</label>
-                    <select id="userClass" required 
-                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-indigo-500 text-white appearance-none">
-                        <option value="" disabled selected>수강반을 선택하세요</option>
-                        <option value="650">650 목표반</option>
-                        <option value="750">750 목표반</option>
-                        <option value="850">850 목표반</option>
-                    </select>
+                    <div class="relative">
+                        <select id="userClass" required 
+                            class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-indigo-500 text-white appearance-none cursor-pointer">
+                            <option value="" disabled selected>수강반을 선택하세요</option>
+                            <option value="650">650 목표반</option>
+                            <option value="780">780 목표반</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-5 flex items-center pointer-events-none text-slate-500">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2 ml-1">Student ID</label>
                     <input type="text" id="userId" required 
                         class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-600" 
-                        placeholder="학번을 입력하세요 (예: 2024001)">
+                        placeholder="학번을 입력하세요 (예: 202601)">
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2 ml-1">Student Name</label>
                     <input type="text" id="userName" required 
                         class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-600" 
-                        placeholder="성함을 입력하세요">
+                        placeholder="이름을 입력하세요">
                 </div>
 
                 <button type="submit" 
@@ -62,16 +66,16 @@
             e.preventDefault();
             
             const userData = {
-                userClass: document.getElementById('userClass').value, // 수강반
-                userId: document.getElementById('userId').value,       // 학번 (Firebase 키값으로 활용)
-                userName: document.getElementById('userName').value,   // 이름
+                userClass: document.getElementById('userClass').value, 
+                userId: document.getElementById('userId').value,      
+                userName: document.getElementById('userName').value,  
                 loginTime: new Date().toISOString()
             };
 
-            // ✅ 로컬 스토리지 저장 (index.html 및 학습 페이지 연동용)
+            // ✅ 로컬 스토리지 저장
             localStorage.setItem('toeic_user', JSON.stringify(userData));
 
-            alert(`${userData.userName} 학생(${userData.userClass}반), 확인되었습니다.`);
+            alert(`${userData.userName} 학생(${userData.userClass}반), 환영합니다!`);
             location.href = 'index.html';
         });
     </script>
