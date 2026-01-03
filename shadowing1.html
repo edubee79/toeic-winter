@@ -3,320 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TOEIC Part 2 실전 훈련</title>
+    <title>Shadowing Master | 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen">
+<body class="bg-slate-900 text-white min-h-screen font-pretendard">
 
-    <div id="start-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
-        <h2 class="text-3xl font-black mb-2 tracking-tighter text-indigo-400">LC Part 2 실전</h2>
-        <p class="text-slate-400 mb-8 font-bold text-sm">전체 5회분 학습이 가능합니다.</p>
-        <div class="grid grid-cols-2 gap-4 w-full max-w-xs">
-            <button onclick="startTest(1)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 1</button>
-            <button onclick="startTest(2)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 2</button>
-            <button onclick="startTest(3)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 3</button>
-            <button onclick="startTest(4)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 4</button>
-            <button onclick="startTest(5)" class="py-4 bg-indigo-600 rounded-2xl font-black border border-indigo-500 active:scale-95 transition-all col-span-2 mt-2 shadow-lg shadow-indigo-500/20">TEST 5 시작하기</button>
+    <div id="start-overlay" class="fixed inset-0 z-[200] bg-slate-900 flex flex-col items-center justify-center p-10 text-center">
+        <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mb-6 shadow-2xl animate-bounce">
+            <i class="fas fa-volume-up text-3xl text-white"></i>
         </div>
+        <h2 class="text-2xl font-black mb-2 tracking-tighter">학습 준비 완료</h2>
+        <p class="text-slate-400 font-bold text-sm mb-8">원어민 발음을 듣기 위해<br>아래 버튼을 눌러주세요.</p>
+        <button id="audio-unlock-btn" class="w-full max-w-xs py-5 bg-white text-slate-900 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all">스피커 활성화 후 시작</button>
     </div>
 
     <nav class="p-6 flex justify-between items-center max-w-md mx-auto">
-        <button onclick="location.href='index.html'"><i class="fas fa-home text-slate-400 text-xl"></i></button>
-        <span id="progress-text" class="font-black text-indigo-400 text-lg uppercase tracking-widest italic">READY</span>
-        <div class="w-4"></div>
+        <button onclick="location.href='index.html'" class="text-slate-400"><i class="fas fa-arrow-left text-xl"></i></button>
+        <h1 id="nav-title" class="font-black text-lg tracking-tighter italic text-indigo-400 uppercase">SHADOWING</h1>
+        <div class="w-8"></div>
     </nav>
 
-    <main class="max-w-md mx-auto px-6 pb-20">
-        <div id="quiz-container" class="space-y-8">
-            <div id="audio-card" class="bg-white rounded-[3rem] p-12 text-center shadow-2xl relative overflow-hidden transition-all duration-300">
-                <div id="playback-wave" class="absolute inset-x-0 bottom-0 h-1 bg-indigo-100 origin-left scale-x-0 transition-transform duration-100"></div>
-                <button id="play-btn" onclick="handlePlay()" class="w-24 h-24 bg-indigo-600 rounded-full text-white text-4xl shadow-xl active:scale-95 flex items-center justify-center mx-auto transition-all">
-                    <i class="fas fa-play ml-1"></i>
-                </button>
-                <p id="audio-status" class="text-slate-400 font-black text-[10px] mt-4 uppercase tracking-widest text-center">Listen & Select</p>
+    <main class="max-w-md mx-auto px-6 pb-20 text-center">
+        <div class="mb-10 flex justify-between items-end text-left">
+            <div>
+                <p class="text-indigo-500 text-[10px] font-black uppercase tracking-widest mb-1">Step 02. Shadowing</p>
+                <h2 class="text-2xl font-black italic">Listen & Repeat</h2>
             </div>
+            <div class="text-right">
+                <span id="progress-text" class="text-indigo-400 font-black text-2xl">1</span><span id="total-text" class="text-slate-700 font-bold text-lg"> / --</span>
+            </div>
+        </div>
 
-            <div id="options-grid" class="grid gap-3">
-                <button id="btn-0" onclick="checkAnswer(0)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 transition-all duration-300">
-                    <span class="btn-label">(A)</span>
-                </button>
-                <button id="btn-1" onclick="checkAnswer(1)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 transition-all duration-300">
-                    <span class="btn-label">(B)</span>
-                </button>
-                <button id="btn-2" onclick="checkAnswer(2)" class="option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 transition-all duration-300">
-                    <span class="btn-label">(C)</span>
+        <div class="bg-white rounded-[3rem] p-10 shadow-2xl mb-10 border border-white/10 relative overflow-hidden min-h-[250px] flex items-center justify-center">
+            <div id="sentence-box" class="blur-md transition-all duration-700">
+                <p id="target-sentence" class="text-slate-900 font-black text-2xl leading-tight italic mb-4 tracking-tight"></p>
+                <p id="sentence-mean" class="text-slate-400 font-bold text-sm"></p>
+            </div>
+            
+            <div id="play-overlay" class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+                <button onclick="playAudio()" class="w-24 h-24 bg-indigo-600 rounded-full shadow-2xl flex items-center justify-center">
+                    <i class="fas fa-play text-white text-4xl ml-1"></i>
                 </button>
             </div>
         </div>
 
-        <div id="review-overlay" class="hidden text-center py-20 space-y-6">
-            <h3 class="text-4xl font-black text-rose-500 italic">REVIEW</h3>
-            <p class="text-slate-400 font-bold">틀린 문제를 다시 완벽히 풀어보세요.</p>
-            <button onclick="startReview()" class="w-full py-6 bg-rose-600 rounded-3xl font-black text-xl shadow-2xl">복습 시작하기</button>
+        <div class="space-y-6">
+            <div id="status-msg" class="text-slate-500 font-black text-[10px] uppercase tracking-widest">중앙 버튼을 눌러 소리를 들으세요</div>
+            <button id="mic-btn" disabled onclick="startListening()" class="w-full py-8 bg-slate-800 text-slate-600 rounded-[2.5rem] text-xl font-black transition-all">
+                <i class="fas fa-microphone mr-3"></i> 소리를 먼저 들으세요
+            </button>
+            <p id="user-transcript" class="text-indigo-400 font-bold italic text-sm min-h-[1.5rem]"></p>
         </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", authDomain: "eduthot-fb088.firebaseapp.com", projectId: "eduthot-fb088", storageBucket: "eduthot-fb088.firebasestorage.app", messagingSenderId: "919552710378", appId: "1:919552710378:web:7ba72ea2d195e092f8a993" };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8",
+            authDomain: "eduthot-fb088.firebaseapp.com",
+            projectId: "eduthot-fb088",
+            storageBucket: "eduthot-fb088.firebasestorage.app",
+            messagingSenderId: "919552710378",
+            appId: "1:919552710378:web:7ba72ea2d195e092f8a993"
+        };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const generateData = (arr) => arr.map((item, index) => ({ id: 7 + index, correct: item.c, script: item.s, options: item.o }));
-
-        // 수정된 데이터: ETS TOEIC LC 1000 Vol.4 기반 정확한 스크립트
-        const testBank = {
-            1: generateData([
-                {c:1, s:"About ten years old.", o:["To ship some materials.","About ten years old.","Company offices, I think."]},
-                {c:2, s:"Sure, I'll be there!", o:["I'm sorry I was late for the meeting.","Mostly just local musicians.","Sure, I'll be there!"]},
-                {c:2, s:"It came from the tenants in B23.", o:["It's what you did for a living.","Submit your assignment here.","It came from the tenants in B23."]},
-                {c:0, s:"Of course, I'll take care of it.", o:["Of course, I'll take care of it.","An e-mail receipt.","Could I get change for a dollar?"]},
-                {c:2, s:"Because a light needed to be fixed.", o:["No, he didn't.","From three o'clock until four.","Because a light needed to be fixed."]},
-                {c:2, s:"Yes, they chose Jacob Borgman.", o:["Put it on the highest shelf.","The personnel department.","Yes, they chose Jacob Borgman."]},
-                {c:2, s:"Let's eat here.", o:["He went there yesterday.","Well, maybe a sandwich.","Let's eat here."]},
-                {c:1, s:"No, I'll send it now.", o:["Yes, I would agree.","No, I'll send it now.","Check the employee manual."]},
-                {c:0, s:"There's a lot of rain in the forecast.", o:["There's a lot of rain in the forecast.","Sure, I like salad.","At the end of this corridor."]},
-                {c:0, s:"Just water, please.", o:["Just water, please.","For a few dollars more.","A fifteen-minute break."]},
-                {c:0, s:"That's excellent news!", o:["That's excellent news!","A few times a day.","To the end of April."]},
-                {c:2, s:"About once a month.", o:["It turned out well.","Yes, I did find one.","About once a month."]},
-                {c:1, s:"I didn't bring boots.", o:["This seat is available.","I didn't bring boots.","At the visitors' center."]},
-                {c:2, s:"Yes, I made a reservation last week.", o:["Very enjoyable, thanks.","He usually takes the train.","Yes, I made a reservation last week."]},
-                {c:0, s:"It's sold out.", o:["It's sold out.","He's a concert violinist.","They already left."]},
-                {c:1, s:"I haven't had the chance.", o:["Can I take your order?","I haven't had the chance.","About 40 dollars."]},
-                {c:2, s:"The prototype is still being tested.", o:["Only with fruits and vegetables.","In the kitchen cabinet.","The prototype is still being tested."]},
-                {c:0, s:"They decided to drive.", o:["They decided to drive.","At terminal 2.","It's a marketing position."]},
-                {c:2, s:"I needed some for a large bouquet.", o:["About three liters of water.","No, I didn't check out the sale.","I needed some for a large bouquet."]},
-                {c:0, s:"Why don't we go see it?", o:["Why don't we go see it?","After the announcement.","He made a great speech."]},
-                {c:1, s:"Clara's already organizing one.", o:["Thanks, but I can't swim.","Clara's already organizing one.","It's a very interesting article."]},
-                {c:0, s:"We just sent an e-mail to all instructors.", o:["We just sent an e-mail to all instructors.","Five to seven months.","Yes, it's a beautiful building."]},
-                {c:2, s:"Our spring merchandise is arriving soon.", o:["In the new shopping mall.","Yes, they come in other colors.","Our spring merchandise is arriving soon."]},
-                {c:2, s:"I have very limited time.", o:["Thank you for meeting me.","A contact lens prescription.","I have very limited time."]},
-                {c:1, s:"I really like working with computers.", o:["No, at ten A.M.","I really like working with computers.","Just a résumé is needed."]}
-            ]),
-            // TEST 2~5 데이터도 검색 결과 기반으로 보정 (이전과 동일)
-            2: generateData([
-                {c:0, s:"No, not yet.", o:["No, not yet.","Ifs in the shipping container.","I just put it in the trash bin."]},
-                {c:0, s:"About 10 percent.", o:["About 10 percent.","Three hours, I think.","At the bank's main branch."]},
-                {c:1, s:"Yes, right after lunch.", o:["I walked the whole way.","Yes, right after lunch.","In the breakroom."]},
-                {c:1, s:"I already scheduled one.", o:["Those glasses look nice on you.","I already scheduled one.","The seminar is three days long."]},
-                {c:2, s:"Are you sure it can be repaired?", o:["You're right, it doesn't fit.","Double-sided copies.","Are you sure it can be repaired?"]},
-                {c:2, s:"I'll leave them at the front desk.", o:["A trip to the seashore.","Yes, I found it already.","I'll leave them at the front desk."]},
-                {c:1, s:"Yes, its happening tomorrow instead.", o:["We have lots of desk calendar designs.","Yes, its happening tomorrow instead.","This soup I ordered is delicious."]},
-                {c:0, s:"Sure, we have time for that.", o:["Sure, we have time for that.","A full-service buffet.","The topic is professional networking."]},
-                {c:1, s:"Yes, it was delicious.", o:["We need a table for five.","Yes, it was delicious.","I'll try to make it on time."]},
-                {c:1, s:"A jazz singer from France.", o:["Could you turn up the volume?","A jazz singer from France.","The position has been filled."]},
-                {c:2, s:"Just send me the changes you want.", o:["The schedule was e-mailed last Friday.","Some innovative features.","Just send me the changes you want."]},
-                {c:2, s:"I wasn't involved.", o:["Blue and orange.","It was fine, thanks.","I wasn't involved."]},
-                {c:1, s:"Next week on Monday.", o:["In the storage closet.","Next week on Monday.","The new desk looks great!"]},
-                {c:1, s:"I can order one for you.", o:["Around three o'clock.","I can order one for you.","A limited return policy."]},
-                {c:1, s:"Ms. Pavlova isn't retiring for several weeks.", o:["Ifs an hour long.","Ms. Pavlova isn't retiring for several weeks.","No, that department's upstairs."]},
-                {c:2, s:"They're being picked up.", o:["No thanks—I'm not hungry.","Ten dollars for two.","They're being picked up."]},
-                {c:1, s:"Which dates have been changed?", o:["I couldn't find them either.","Which dates have been changed?","Two dollars per pound."]},
-                {c:0, s:"The work is covered under the warranty plan.", o:["The work is covered under the warranty plan.","Yes, it's also available in red.","In about two weeks."]},
-                {c:2, s:"There are plenty in the binders.", o:["The newspaper is delivered daily.","An interior design course.","There are plenty in the binders."]},
-                {c:0, s:"Sorry, I won't have time until tomorrow.", o:["Sorry, I won't have time until tomorrow.","It has a very modern design.","A house on Maple Street."]},
-                {c:0, s:"We're waiting for confirmation.", o:["We're waiting for confirmation.","It's a great album, right?","About six weeks ago."]}
-            ]),
-            3: generateData([
-                {c:0, s:"Because it's out of stock.", o:["Because it's out of stock.","Those roses smell nice.","No, the other cake."]},
-                {c:0, s:"At four o'clock.", o:["At four o'clock.","That's a delicious flavor.","Many vegetarian options."]},
-                {c:2, s:"Right after lunch.", o:["At a networking event.","I started this job six years ago.","Right after lunch."]},
-                {c:1, s:"Around 200 dollars.", o:["I have two pairs of shoes.","Around 200 dollars.","The restaurant downtown."]},
-                {c:1, s:"Yes, for an annual checkup.", o:["Oh, I've already had breakfast.","Yes, for an annual checkup.","Let's take the bus."]},
-                {c:0, s:"In the corner by the stairs.", o:["In the corner by the stairs.","The third page of the document.","A reusable ink cartridge."]},
-                {c:2, s:"One that doesn't require much water.", o:["Whenever I sit at my desk.","Thanks—I just bought it.","One that doesn't require much water."]},
-                {c:1, s:"Did you buy anything?", o:["No, it wasn't in storage.","Did you buy anything?","Some old receipts."]},
-                {c:0, s:"Let me send you the link.", o:["Let me send you the link.","A broken power cable.","No, over ten minutes."]},
-                {c:0, s:"I've never used that model before.", o:["I've never used that model before.","Ten euros per hour.","We charge more for color photographs."]},
-                {c:1, s:"I'm free to walk now.", o:["A nearby lake.","I'm free to walk now.","No, I don't use a fitness tracker."]},
-                {c:1, s:"Great—I can't wait to use it.", o:["The news program on Channel Ten.","Great—I can't wait to use it.","The car dealership."]},
-                {c:0, s:"I just renewed my current lease.", o:["I just renewed my current lease.","It was a great show.","A standard rental application."]},
-                {c:2, s:"I just called maintenance.", o:["Yes, that's my Web site.","A five-kilometer run.","I just called maintenance."]},
-                {c:1, s:"Next week on Monday.", o:["In the storage closet.","Next week on Monday.","The new desk looks great!"]},
-                {c:2, s:"No, they still have another month to go.", o:["I just finished my conference presentation.","A lot of traffic in the evening.","No, they still have another month to go."]},
-                {c:0, s:"It's a week from tomorrow.", o:["It's a week from tomorrow.","Sure, I can take it.","The park next to the art museum."]},
-                {c:1, s:"I had a discount coupon.", o:["Do you have a new password?","I had a discount coupon.","On top of the cabinet."]},
-                {c:2, s:"I have a performance scheduled with my band.", o:["Yes, that table lamp is quite nice.","Should we go left or right?","I have a performance scheduled with my band."]},
-                {c:1, s:"The factory supervisor.", o:["I thought I saved the file.","The factory supervisor.","It's this Wednesday."]},
-                {c:1, s:"I haven't checked my e-mail.", o:["At the post office.","I haven't checked my e-mail.","A ticket for two o'clock, please."]}
-            ]),
-            4: generateData([
-                {c:1, s:"The presentation starts at two.", o:["At the reception desk.","The presentation starts at two.","Mr. Kim is in charge."]},
-                {c:1, s:"From a supplier in California.", o:["Here's a basket you can use.","From a supplier in California.","That umbrella is a nice color."]},
-                {c:1, s:"Saturday is better.", o:["The Beachside Bistro.","Saturday is better.","A large plate of pasta."]},
-                {c:0, s:"No, you shouldn't have to wait long.", o:["No, you shouldn't have to wait long.","It's just under the desk.","Sure, I can do that for you."]},
-                {c:2, s:"Yes, they're on the lower floor.", o:["These socks are quite comfortable.","She teaches an exercise class.","Yes, they're on the lower floor."]},
-                {c:1, s:"You can hang your vest on that hook.", o:["Maksim does.","You can hang your vest on that hook.","No, I'm certain about that."]},
-                {c:2, s:"Yes, of course.", o:["Thank you, it was just renovated.","A free continental breakfast.","Yes, of course."]},
-                {c:2, s:"At a store in the city center.", o:["They'll give you a discount.","A pair of earrings.","At a store in the city center."]},
-                {c:0, s:"Actually, its in the morning.", o:["Actually, its in the morning.","That office is on the corner.","I have the train schedule here."]},
-                {c:2, s:"Certainly, I have some right here.", o:["It's for an award ceremony.","A charge for expedited delivery.","Certainly, I have some right here."]},
-                {c:1, s:"We already have one.", o:["Some customer reviews.","We already have one.","I take my coffee with sugar."]},
-                {c:2, s:"Do we have enough handouts?", o:["Probably in the conference room.","They were hired by our manager.","Do we have enough handouts?"]},
-                {c:0, s:"I'd have to look at the receipt.", o:["I'd have to look at the receipt.","The fitness center is across from the reception desk.","I'll be eating breakfast in my room."]},
-                {c:0, s:"Because I have a talent for it.", o:["Because I have a talent for it.","This is my new laptop.","It's on the other shelf."]},
-                {c:2, s:"Registration closed yesterday.", o:["The speech was inspiring.","Tunji updated the memo.","Registration closed yesterday."]},
-                {c:2, s:"I'm still waiting.", o:["A new phone number.","Yes, any available position.","I'm still waiting."]},
-                {c:2, s:"I'll buy mine at the door.", o:["The theater is on Johnson Avenue.","At seven thirty sharp.","I'll buy mine at the door."]},
-                {c:1, s:"A lot of good résumés have come in.", o:["A much higher salary.","A lot of good résumés have come in.","In the building across the street."]},
-                {c:2, s:"What did you think of it?", o:["Their contact information.","Early next week.","What did you think of it?"]},
-                {c:0, s:"Oh, I'm not a sales associate.", o:["Oh, I'm not a sales associate.","I've read the information packet.","A very large uniform."]},
-                {c:1, s:"It's out of stock right now.", o:["Yes, it's a great place for hiking.","It's out of stock right now.","The warehouse on William Street."]},
-                {c:2, s:"A house on Maple Street.", o:["Sorry, I won't have time until tomorrow.","It has a very modern design.","A house on Maple Street."]},
-                {c:0, s:"We're waiting for confirmation.", o:["We're waiting for confirmation.","It's a great album, right?","About six weeks ago."]}
-            ]),
-            5: generateData([
-                {c:0, s:"Yes, it's for the whole department.", o:["Yes, it's for the whole department.","No, put it in the closet.","The rent is too high."]},
-                {c:2, s:"Because the artist is out of town.", o:["Red and yellow.","Please pick up the ladder.","Because the artist is out of town."]},
-                {c:2, s:"Mornings are usually better for me.", o:["My publisher requested edits.","Thanks for providing a solution.","Mornings are usually better for me."]},
-                {c:1, s:"That's a good idea.", o:["Doctor Park has an opening at three.","That's a good idea.","I prefer the red jacket."]},
-                {c:1, s:"No, I didn't know that.", o:["Forty dollars an hour.","No, I didn't know that.","I saw the piano recital."]},
-                {c:0, s:"The receptionist would know.", o:["The receptionist would know.","Desk lamps and headsets.","Twelve euros."]},
-                {c:2, s:"The warehouse on William Street.", o:["Yes, it's a great place for hiking.","It's out of stock right now.","The warehouse on William Street."]},
-                {c:2, s:"We decided to keep the old one.", o:["Ten packages a minute.","We met last Thursday.","We decided to keep the old one."]},
-                {c:1, s:"OK—I'll update your schedule.", o:["An awfully long commute.","OK—I'll update your schedule.","It's right down the hallway."]},
-                {c:0, s:"Yes—I'm planning a trip to Barcelona.", o:["Yes—I'm planning a trip to Barcelona.","This is your second time, isn't it?","Blueprints for a high-rise building."]},
-                {c:1, s:"I can do that.", o:["We're sharing a taxi to the airport.","I can do that.","A recent hiring decision."]},
-                {c:0, s:"The usual one.", o:["The usual one.","A one-way ticket.","Yes, you can use mine."]},
-                {c:1, s:"To the assembly plant in Dublin.", o:["Around five thirty this evening.","To the assembly plant in Dublin.","Just half the order."]},
-                {c:2, s:"Alberto did.", o:["I just ate.","It closes at five.","Alberto did."]},
-                {c:1, s:"A couple dozen, I think.", o:["I don't mind taking notes at the meeting.","A couple dozen, I think.","It's seven meters long."]},
-                {c:0, s:"We still have a few minutes.", o:["We still have a few minutes.","There's a map on the wall.","Two sessions per day."]},
-                {c:1, s:"One hundred dollars per day.", o:["To fix the vending machine.","One hundred dollars per day.","Next to the travel agency."]},
-                {c:2, s:"I'm not on the hiring team.", o:["Yes, we're extending our business hours.","Didn't Andrey direct the play?","I'm not on the hiring team."]},
-                {c:2, s:"The store has a new manager.", o:["There's a charging station in the cafe.","Yes, a three-bedroom apartment.","The store has a new manager."]},
-                {c:2, s:"He started that position in July.", o:["The news program is informative.","I have some free time tomorrow afternoon.","He started that position in July."]},
-                {c:2, s:"Did you see the cost estimate?", o:["Not too much wind, no.","Look in the filing cabinet.","Did you see the cost estimate?"]},
-                {c:0, s:"Oh, I'm not a sales associate.", o:["Oh, I'm not a sales associate.","I've read the information packet.","A very large uniform."]},
-                {c:1, s:"It's out of stock right now.", o:["Yes, it's a great place for hiking.","It's out of stock right now.","The warehouse on William Street."]},
-                {c:2, s:"A house on Maple Street.", o:["Sorry, I won't have time until tomorrow.","It has a very modern design.","A house on Maple Street."]},
-                {c:0, s:"We're waiting for confirmation.", o:["We're waiting for confirmation.","It's a great album, right?","About six weeks ago."]}
-            ])
+        const allShadowData = {
+            1: [
+                {en: "Some people are gathered around a table.", ko: "사람들이 테이블에 둘러앉아 있다."},
+                {en: "He is leaning against the railing.", ko: "그는 난간에 기대어 있다."},
+                {en: "A woman is reaching for an item.", ko: "여자가 물건을 잡으려고 손을 뻗고 있다."},
+                {en: "They are facing each other.", ko: "그들이 서로 마주 보고 있다."},
+                {en: "He is adjusting his glasses.", ko: "그가 안경을 고쳐 쓰고 있다."},
+                {en: "She is browsing in a bookstore.", ko: "그녀가 서점에서 책을 구경하고 있다."},
+                {en: "A man is sweeping the pavement.", ko: "남자가 보도를 쓸고 있다."},
+                {en: "He is gesturing with his hands.", ko: "그가 손으로 몸짓을 하고 있다."},
+                {en: "They are strolling along the walkway.", ko: "그들이 산책로를 따라 걷고 있다."},
+                {en: "She is sorting through some papers.", ko: "그녀가 종이들을 분류하고 있다."},
+                {en: "A person is pouring a beverage into a glass.", ko: "음료를 잔에 따르고 있다."},
+                {en: "He is examining some documents.", ko: "그는 문서를 검토하고 있다."},
+                {en: "They are shaking hands with each other.", ko: "그들은 서로 악수하고 있다."},
+                {en: "She is pointing at a screen.", ko: "그녀는 화면을 가리키고 있다."},
+                {en: "The man is lifting a box.", ko: "남자가 상자를 들어 올리고 있다."},
+                {en: "He is taking a photograph of the scenery.", ko: "그는 풍경 사진을 찍고 있다."},
+                {en: "They are applauding the performance.", ko: "그들이 공연에 박수를 치고 있다."},
+                {en: "She is wrapping a gift.", ko: "그녀가 선물을 포장하고 있다."},
+                {en: "A man is typing on a keyboard.", ko: "남자가 키보드로 타이핑을 하고 있다."},
+                {en: "They are waiting in line.", ko: "그들이 줄을 서서 기다리고 있다."},
+                {en: "He is pushing a cart through the aisle.", ko: "그가 통로에서 카트를 밀고 있다."},
+                {en: "She is drinking from a water fountain.", ko: "그녀가 식수대에서 물을 마시고 있다."},
+                {en: "They are discussing some information.", ko: "그들이 정보를 논의하고 있다."},
+                {en: "A man is boarding a bus.", ko: "남자가 버스에 올라타고 있다."},
+                {en: "He is checking his reflection in the mirror.", ko: "그가 거울에 비친 모습을 확인하고 있다."},
+                {en: "She is wiping the counter with a cloth.", ko: "그녀가 천으로 카운터를 닦고 있다."},
+                {en: "They are hiking up a mountain.", ko: "그들이 산을 등반하고 있다."},
+                {en: "He is repairing a bicycle.", ko: "그가 자전거를 수리하고 있다."},
+                {en: "She is handing a document to her colleague.", ko: "그녀가 동료에게 서류를 건네고 있다."},
+                {en: "A man is tying his shoelaces.", ko: "남자가 신발끈을 묶고 있다."},
+                {en: "They are sitting across from each other.", ko: "그들이 서로 마주 보고 앉아 있다."},
+                {en: "He is reading a menu.", ko: "그는 메뉴판을 읽고 있다."},
+                {en: "She is carrying a briefcase.", ko: "그녀가 서류 가방을 들고 있다."}
+            ],
+            2: [
+                {en: "Merchandise is being displayed in the shop.", ko: "상품이 가게에 전시되고 있다."},
+                {en: "A plant has been placed in the corner.", ko: "식물이 구석에 놓여 있다."},
+                {en: "The vehicles are parked in a row.", ko: "차량들이 한 줄로 주차되어 있다."},
+                {en: "Some boxes are stacked on top of each other.", ko: "상자들이 겹겹이 쌓여 있다."},
+                {en: "The curtains have been drawn shut.", ko: "커튼이 쳐져 있다."},
+                {en: "Some steps lead up to a building.", ko: "계단이 건물로 이어져 있다."},
+                {en: "The tables are unoccupied.", ko: "테이블이 비어 있다."},
+                {en: "The path is shaded by some trees.", ko: "길이 나무에 의해 그늘져 있다."},
+                {en: "Equipment is being set up in the lab.", ko: "실험실에 장비가 설치되고 있다."},
+                {en: "The boat is docked at the pier.", ko: "배가 부두에 정박해 있다."},
+                {en: "Shadows are being cast on the ground.", ko: "바닥에 그림자가 드리워져 있다."},
+                {en: "The shelves are filled with books.", ko: "선반이 책으로 가득 차 있다."},
+                {en: "A clock is hanging on the wall.", ko: "시계가 벽에 걸려 있다."},
+                {en: "The outdoor chairs are folded.", ko: "야외용 의자들이 접혀 있다."},
+                {en: "The lawn is being mowed.", ko: "잔디가 깎이고 있다."},
+                {en: "Traffic lights are positioned above the street.", ko: "신호등이 도로 위에 위치해 있다."},
+                {en: "Signs are posted on the fence.", ko: "표지판이 울타리에 붙어 있다."},
+                {en: "A rug has been spread on the floor.", ko: "카펫이 바닥에 깔려 있다."},
+                {en: "The fountain is spraying water into the air.", ko: "분수가 공중으로 물을 뿜고 있다."},
+                {en: "Some bicycles are leaned against a wall.", ko: "자전거들이 벽에 기대어 있다."},
+                {en: "A statue is located in the center of the park.", ko: "조각상이 공원 중앙에 위치해 있다."},
+                {en: "The balcony overlooks the ocean.", ko: "발코니에서 바다가 내다보인다."},
+                {en: "Baskets are hanging from the ceiling.", ko: "바구니들이 천장에 매달려 있다."},
+                {en: "Boxes are being loaded onto a truck.", ko: "상자들이 트럭에 실리고 있다."},
+                {en: "The doorway is blocked by a ladder.", ko: "출입구가 사다리에 의해 막혀 있다."},
+                {en: "Papers are scattered on the desk.", ko: "종이들이 책상 위에 흩어져 있다."},
+                {en: "A fence runs along the perimeter.", ko: "울타리가 주변을 따라 둘러쳐져 있다."},
+                {en: "The lamp is switched on.", ko: "램프가 켜져 있다."},
+                {en: "The seats are arranged in rows.", ko: "좌석들이 여러 줄로 배열되어 있다."},
+                {en: "A bridge connects the two islands.", ko: "다리가 두 섬을 연결하고 있다."},
+                {en: "Windows are being cleaned.", ko: "창문들이 닦이고 있다."},
+                {en: "Flower pots decorate the windowsills.", ko: "화분들이 창틀을 장식하고 있다."},
+                {en: "The garage door is closed.", ko: "차고 문이 닫혀 있다."}
+            ],
+            3: [
+                {en: "A reflection is visible in the window.", ko: "창문에 비친 모습이 보인다."},
+                {en: "Construction work is in progress.", ko: "공사가 진행 중이다."},
+                {en: "The containers have been emptied.", ko: "용기들이 비워져 있다."},
+                {en: "The labels are attached to the jars.", ko: "라벨이 병에 붙어 있다."},
+                {en: "A bridge spans a waterway.", ko: "다리가 수로를 가로지르고 있다."},
+                {en: "The floor is being mopped.", ko: "바닥을 대걸레로 닦고 있다."},
+                {en: "Items have been arranged in a display case.", ko: "물건들이 진열장에 배치되어 있다."},
+                {en: "Potted plants are lined up on a ledge.", ko: "화분들이 선반 위에 줄지어 있다."},
+                {en: "The ceiling is under repair.", ko: "천장이 수리 중이다."},
+                {en: "The road is being repaved.", ko: "도로가 재포장되고 있다."},
+                {en: "Some tools are scattered on the workbench.", ko: "공구들이 작업대에 흩어져 있다."},
+                {en: "A rug is being rolled up.", ko: "카페트가 말리고 있다."},
+                {en: "The door has been left open.", ko: "문이 열린 채로 있다."},
+                {en: "Scaffolding has been erected against the wall.", ko: "벽에 비계가 설치되어 있다."},
+                {en: "A basket is being filled with fruit.", ko: "바구니에 과일이 담기고 있다."},
+                {en: "The awning provides shade for the diners.", ko: "차양이 식사하는 사람들에게 그늘을 제공한다."},
+                {en: "Some tiles are being replaced.", ko: "타일이 교체되고 있다."},
+                {en: "A walkway leads to the beach.", ko: "보도가 해변으로 이어진다."},
+                {en: "Boats are anchored in the harbor.", ko: "배들이 항구에 정박해 있다."},
+                {en: "Trees line both sides of the street.", ko: "나무들이 도로 양쪽에 줄지어 있다."},
+                {en: "The stairs are made of stone.", ko: "계단은 돌로 만들어져 있다."},
+                {en: "An umbrella is providing shade.", ko: "우산이 그늘을 만들어주고 있다."},
+                {en: "The building is surrounded by water.", ko: "건물이 물로 둘러싸여 있다."},
+                {en: "A package is being delivered.", ko: "택배가 배달되고 있다."},
+                {en: "Flowers are blooming in the garden.", ko: "정원에 꽃들이 피어 있다."},
+                {en: "The painting is framed.", ko: "그림이 액자에 끼워져 있다."},
+                {en: "A path winds through the forest.", ko: "길이 숲속을 구부러져 이어져 있다."},
+                {en: "The stadium is packed with people.", ko: "경기장이 사람들로 가득 차 있다."},
+                {en: "A banner is displayed above the entrance.", ko: "현수막이 입구 위에 게시되어 있다."},
+                {en: "The roof is flat.", ko: "지붕이 평평하다."},
+                {en: "The gate is locked.", ko: "대문이 잠겨 있다."},
+                {en: "Supplies are being unpacked.", ko: "물품들이 풀리고 있다."},
+                {en: "Water is flowing from a pipe.", ko: "파이프에서 물이 흐르고 있다."},
+                {en: "A ladder is leaning against a tree.", ko: "사다리가 나무에 기대어 있다."}
+            ]
         };
 
-        let currentTestNum = 1;
-        let mainQueue = [];
-        let wrongQueue = [];
-        let isReviewMode = false;
-        let currentIdx = 0;
-        let audio = new Audio();
+        let currentSession = [];
+        let currentIndex = 0;
+        const synth = window.speechSynthesis;
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
 
-        window.startTest = function(num) {
-            currentTestNum = num;
-            mainQueue = testBank[num];
-            wrongQueue = [];
-            isReviewMode = false;
-            currentIdx = 0;
+        document.getElementById('audio-unlock-btn').addEventListener('click', function() {
+            const silent = new SpeechSynthesisUtterance(" ");
+            synth.speak(silent);
             document.getElementById('start-overlay').classList.add('hidden');
-            loadQuestion();
-        };
+            initSession();
+        }, { once: true });
 
-        function loadQuestion() {
-            audio.pause();
-            const list = isReviewMode ? wrongQueue : mainQueue;
-            const data = list[currentIdx];
-            
-            document.getElementById('progress-text').innerText = isReviewMode ? `REVIEW Q.${data.id}` : `TEST ${currentTestNum} Q.${data.id}`;
-            document.getElementById('play-btn').innerHTML = '<i class="fas fa-play ml-1"></i>';
-            document.getElementById('audio-status').innerText = "Click Play";
-            document.getElementById('playback-wave').style.transform = 'scaleX(0)';
-            
-            [0, 1, 2].forEach(i => {
-                const btn = document.getElementById(`btn-${i}`);
-                btn.className = "option-btn w-full py-5 bg-slate-800 rounded-2xl font-bold text-left px-6 border border-slate-700 transition-all duration-300";
-                btn.disabled = false;
-                btn.querySelector('.btn-label').innerText = `(${String.fromCharCode(65+i)})`;
-            });
-            
-            const tNum = currentTestNum.toString().padStart(2, '0');
-            const qNum = data.id.toString().padStart(2, '0');
-            audio.src = `audio/Test_${tNum}-${qNum}.mp3`;
+        function initSession() {
+            const day = localStorage.getItem('shadow_day') || 1;
+            document.getElementById('nav-title').innerText = `DAY ${day} SHADOWING`;
+            currentSession = [...allShadowData[day]];
+            document.getElementById('total-text').innerText = ` / ${currentSession.length}`;
+            loadSentence();
         }
 
-        window.handlePlay = function() {
-            audio.currentTime = 0;
-            audio.play().catch(e => {
-                document.getElementById('audio-status').innerText = "Audio Not Found";
-            });
-            document.getElementById('play-btn').innerHTML = '<i class="fas fa-volume-up"></i>';
-            document.getElementById('audio-status').innerText = "Playing...";
-            audio.ontimeupdate = () => {
-                const progress = audio.currentTime / audio.duration || 0;
-                document.getElementById('playback-wave').style.transform = `scaleX(${progress})`;
+        function loadSentence() {
+            if(currentIndex >= currentSession.length) { finishShadowing(); return; }
+            const data = currentSession[currentIndex];
+            document.getElementById('target-sentence').innerText = data.en;
+            document.getElementById('sentence-mean').innerText = data.ko;
+            document.getElementById('progress-text').innerText = currentIndex + 1;
+            document.getElementById('sentence-box').classList.add('blur-md');
+            document.getElementById('play-overlay').style.display = 'flex';
+            document.getElementById('status-msg').innerText = "재생 버튼을 누르세요";
+            
+            const micBtn = document.getElementById('mic-btn');
+            micBtn.disabled = true;
+            micBtn.classList.replace('bg-indigo-600', 'bg-slate-800');
+            micBtn.innerText = "소리를 먼저 들으세요";
+            document.getElementById('user-transcript').innerText = "";
+        }
+
+        window.playAudio = function() {
+            synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(currentSession[currentIndex].en);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            utterance.onend = function() {
+                document.getElementById('sentence-box').classList.remove('blur-md');
+                document.getElementById('play-overlay').style.display = 'none';
+                document.getElementById('status-msg').innerText = "이제 따라 말하세요!";
+                const micBtn = document.getElementById('mic-btn');
+                micBtn.disabled = false;
+                micBtn.classList.replace('bg-slate-800', 'bg-indigo-600');
+                micBtn.innerText = "마이크 누르고 따라하기";
             };
-            audio.onended = () => {
-                document.getElementById('play-btn').innerHTML = '<i class="fas fa-redo-alt"></i>';
-                document.getElementById('audio-status').innerText = "Select Answer";
-            };
+            synth.speak(utterance);
         };
 
-        window.checkAnswer = function(choice) {
-            const list = isReviewMode ? wrongQueue : mainQueue;
-            const data = list[currentIdx];
-            [0,1,2].forEach(i => document.getElementById(`btn-${i}`).disabled = true);
+        window.startListening = function() {
+            recognition.start();
+            document.getElementById('mic-btn').innerText = "인식 중...";
+            document.getElementById('mic-btn').classList.replace('bg-indigo-600', 'bg-rose-500');
+        };
 
-            if (choice === data.correct) {
-                const btn = document.getElementById(`btn-${choice}`);
-                btn.classList.replace('bg-slate-800', 'bg-green-600');
-                btn.classList.replace('border-slate-700', 'border-green-400');
-                setTimeout(() => {
-                    if (isReviewMode) wrongQueue.splice(currentIdx, 1);
-                    else currentIdx++;
-                    checkNavigation(list);
-                }, 800);
+        recognition.onresult = (event) => {
+            const result = event.results[0][0].transcript.toLowerCase().replace(/[.,!?]/g, "");
+            const target = currentSession[currentIndex].en.toLowerCase().replace(/[.,!?]/g, "");
+            document.getElementById('user-transcript').innerText = `내 발음: "${result}"`;
+
+            const targetWords = target.split(' ').filter(w => w.length > 3);
+            const isPass = result.includes(target) || targetWords.every(w => result.includes(w));
+
+            if (isPass) {
+                currentIndex++;
+                setTimeout(() => { alert("Great!"); loadSentence(); }, 300);
             } else {
-                const btn = document.getElementById(`btn-${choice}`);
-                btn.classList.replace('bg-slate-800', 'bg-rose-600');
-                btn.classList.replace('border-slate-700', 'border-rose-400');
-                btn.querySelector('.btn-label').innerText = data.script;  // 스크립트만 표시
-                
-                if (!isReviewMode) {
-                    if(!wrongQueue.find(i => i.id === data.id)) wrongQueue.push(data);
-                }
-                setTimeout(() => {
-                    [0,1,2].forEach(i => document.getElementById(`btn-${i}`).disabled = false);
-                    handlePlay();
-                }, 1500);
+                // [수정] 실패 시 알림 후 소리 다시 재생
+                alert("아쉬워요! 다시 한 번 듣고 따라해 보세요.");
+                playAudio(); // 소리 다시 재생 함수 호출
             }
         };
 
-        function checkNavigation(list) {
-            if (currentIdx >= list.length) {
-                if (!isReviewMode && wrongQueue.length > 0) showReviewPrompt();
-                else if (isReviewMode && wrongQueue.length > 0) { currentIdx = 0; loadQuestion(); }
-                else finishAll();
-            } else {
-                loadQuestion();
-            }
-        }
-
-        function showReviewPrompt() {
-            document.getElementById('quiz-container').classList.add('hidden');
-            document.getElementById('review-overlay').classList.remove('hidden');
-        }
-
-        window.startReview = function() {
-            isReviewMode = true; currentIdx = 0;
-            document.getElementById('quiz-container').classList.remove('hidden');
-            document.getElementById('review-overlay').classList.add('hidden');
-            loadQuestion();
-        };
-
-        async function finishAll() {
+        async function finishShadowing() {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
-            if (user) {
-                try {
-                    await setDoc(doc(db, "Winter_Users", user.userId), {
-                        completed_part2: arrayUnion(`Test ${currentTestNum} 완료`),
-                        lastUpdate: new Date().toISOString()
-                    }, { merge: true });
-                } catch(e) { console.error(e); }
+            const day = localStorage.getItem('shadow_day') || 1;
+            if(user) {
+                await setDoc(doc(db, "Winter_Users", user.userId), {
+                    [`shadow_day_${day}_pass`]: true,
+                    lastShadowDate: new Date().toISOString()
+                }, { merge: true });
             }
-            alert(`🏆 TEST ${currentTestNum} 완료!`);
+            alert(`${day}일차 전체 문장 학습 완료!`);
             location.href = "index.html";
         }
     </script>
