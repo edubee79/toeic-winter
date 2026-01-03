@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Winter Camp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center px-6">
+
+    <div class="w-full max-w-md">
+        <div class="text-center mb-10">
+            <div class="inline-block w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-indigo-500/20">
+                <i class="fas fa-bolt text-2xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-black tracking-tighter italic">WINTER CAMP</h1>
+            <p class="text-slate-500 font-medium mt-2">토익 사관학교에 오신 것을 환영합니다.</p>
+        </div>
+
+        <div class="bg-slate-800 p-8 rounded-[2.5rem] border border-slate-700 shadow-2xl">
+            <form id="login-form" class="space-y-5">
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2 ml-1">Student Name</label>
+                    <input type="text" id="userName" required 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-600" 
+                        placeholder="이름을 입력하세요">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2 ml-1">Student ID (Phone)</label>
+                    <input type="text" id="userId" required 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-600" 
+                        placeholder="휴대폰 번호 뒷자리 또는 ID">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2 ml-1">Class / School</label>
+                    <input type="text" id="userSchool" required 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-600" 
+                        placeholder="학교 또는 반 정보">
+                </div>
+
+                <button type="submit" 
+                    class="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-lg transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98] mt-4">
+                    START LEARNING
+                </button>
+            </form>
+        </div>
+
+        <p class="text-center mt-8 text-slate-600 text-xs font-bold tracking-widest">
+            © 2026 TOEIC WINTER CAMP MASTER
+        </p>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                userName: document.getElementById('userName').value,
+                userId: document.getElementById('userId').value,
+                userSchool: document.getElementById('userSchool').value,
+                loginTime: new Date().toISOString()
+            };
+
+            // ✅ 모든 페이지에서 참조하는 핵심 로컬 스토리지 데이터 저장
+            localStorage.setItem('toeic_user', JSON.stringify(userData));
+
+            // ✅ 메인 페이지로 이동
+            alert(`${userData.userName}님, 열공하세요!`);
+            location.href = 'index.html';
+        });
+
+        // 이미 로그인된 정보가 있다면 바로 메인으로 이동 (선택 사항)
+        window.onload = function() {
+            const user = localStorage.getItem('toeic_user');
+            if(user) {
+                // 필요 시 자동 로그인 로직 추가 가능
+                // location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
