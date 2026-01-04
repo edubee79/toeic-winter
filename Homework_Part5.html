@@ -53,9 +53,10 @@
 
             <div id="wrong-note-section" class="space-y-4">
                 <h3 class="text-sm font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-6">
-                    <i class="fa-solid fa-book-open"></i> Incorrect Notes & Feedback
+                    <i class="fa-solid fa-book-open"></i> Incorrect Notes
                 </h3>
-                <div id="wrong-details-container" class="space-y-8"></div>
+                <div id="wrong-details-container" class="space-y-8">
+                    </div>
             </div>
         </div>
     </main>
@@ -126,7 +127,7 @@
             const isCorrect = selected === q.answer;
             if(isCorrect) score++;
 
-            // 통합된 해설 데이터를 저장
+            // 해설(해석 포함) 데이터를 저장
             logs.push({
                 question_no: q.question_no || (currentIndex + 1),
                 question_text: q.question,
@@ -134,7 +135,7 @@
                 is_correct: isCorrect,
                 user_choice: selected,
                 correct_answer: q.answer,
-                explanation: q.explanation || "해설 및 해석 데이터가 없습니다."
+                explanation: q.explanation || "해석 및 해설 데이터가 없습니다."
             });
 
             if(currentIndex < questions.length - 1) {
@@ -161,7 +162,7 @@
             } else {
                 wrongQuestions.forEach(log => {
                     const card = document.createElement('div');
-                    card.className = "bg-slate-800/40 rounded-3xl p-6 border border-slate-700/50 shadow-xl";
+                    card.className = "bg-slate-800/40 rounded-3xl p-6 border border-slate-700/50 shadow-xl overflow-hidden";
                     
                     let optionsHtml = ['a', 'b', 'c', 'd'].map(key => {
                         const isCorrect = key === log.correct_answer;
@@ -179,22 +180,25 @@
                     }).join('');
 
                     card.innerHTML = `
-                        <div class="mb-4">
+                        <div class="mb-4 flex justify-between items-center">
                             <span class="text-[10px] font-black text-rose-500 bg-rose-500/10 px-2 py-1 rounded-md uppercase tracking-widest">Question ${log.question_no}</span>
+                            <span class="text-[10px] font-black text-slate-500 italic">Correct: ${log.correct_answer.toUpperCase()}</span>
                         </div>
                         <p class="text-sm font-bold text-slate-100 mb-4 leading-relaxed">${log.question_text}</p>
                         <div class="space-y-1 mb-6">${optionsHtml}</div>
                         
                         <div class="bg-indigo-500/5 rounded-2xl p-5 border-l-4 border-indigo-500">
-                            <h4 class="text-[10px] font-black text-indigo-400 uppercase mb-2 tracking-tighter italic">Analysis & Translation</h4>
-                            <p class="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">${log.explanation}</p>
+                            <h4 class="text-[10px] font-black text-indigo-400 uppercase mb-2 tracking-tighter flex items-center gap-1">
+                                <i class="fa-solid fa-circle-info text-[8px]"></i> 해설 및 해석
+                            </h4>
+                            <p class="text-[13px] text-slate-300 leading-relaxed whitespace-pre-wrap">${log.explanation}</p>
                         </div>
                     `;
                     container.appendChild(card);
                 });
             }
 
-            // Firebase 저장
+            // Firebase 저장 로직 생략 (기존과 동일)
             const storedUser = localStorage.getItem('toeic_user');
             let studentName = "Unknown", studentId = "Unknown", studentClass = "Unknown";
             if (storedUser) {
