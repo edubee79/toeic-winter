@@ -13,7 +13,7 @@
         <header class="flex justify-between items-center mb-10">
             <div>
                 <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Management <span class="text-indigo-600">Pro</span></h1>
-                <p class="text-slate-500 text-xs font-bold mt-1">학생의 모든 과제 진행 현황을 한눈에 관리하세요.</p>
+                <p class="text-slate-500 text-xs font-bold mt-1">학생의 모든 과제 진행 현황을 실시간으로 관리하세요.</p>
             </div>
             
             <div class="flex items-center gap-4">
@@ -35,9 +35,9 @@
                     <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         <th class="p-6">Class</th>
                         <th class="p-6">Student Info</th>
-                        <th class="p-6">Voca Mastery</th>
-                        <th class="p-6 text-indigo-500">Recent Shadowing</th>
-                        <th class="p-6 text-center">Status</th>
+                        <th class="p-6">Overall Progress</th>
+                        <th class="p-6 text-indigo-500">Latest Activity</th>
+                        <th class="p-6 text-center">Detail</th>
                     </tr>
                 </thead>
                 <tbody id="student-list">
@@ -60,7 +60,7 @@
                 </button>
             </div>
 
-            <div id="modal-content" class="p-8 space-y-10">
+            <div id="modal-content" class="p-8 space-y-6">
                 </div>
         </div>
     </div>
@@ -84,7 +84,6 @@
         let studentsData = [];
         let currentFilter = 'all';
 
-        // 1. 실시간 로그 감시
         function listenToLogs() {
             const q = query(collection(db, "Manager_Results"), orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => {
@@ -93,7 +92,6 @@
             });
         }
 
-        // 2. 학생 목록 로드 및 렌더링
         async function loadStudents() {
             const querySnapshot = await getDocs(collection(db, "Winter_Users"));
             studentsData = querySnapshot.docs.map(doc => doc.data());
@@ -104,17 +102,14 @@
             studentsData.forEach(student => {
                 if (currentFilter !== 'all' && String(student.userClass) !== currentFilter) return;
 
-                // 해당 학생의 가장 최근 로그 찾기
                 const studentLogs = allHomeworkLogs.filter(log => log.studentId === student.userId || log.student === student.userName);
                 const recentLog = studentLogs[0];
-
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50 transition-colors border-b border-slate-50 group cursor-pointer";
-                row.setAttribute('onclick', `showStudentDashboard('${student.userName}', '${student.userId}')`);
-                row.setAttribute('data-class', String(student.userClass));
-
                 const vocaCount = student.passedVocaDays ? student.passedVocaDays.length : 0;
                 
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors border-b border-slate-50 group cursor-pointer";
+                row.onclick = () => showStudentDashboard(student.userName, student.userId);
+
                 row.innerHTML = `
                     <td class="p-6 font-bold text-slate-400 text-sm">${student.userClass}반</td>
                     <td class="p-6">
@@ -124,99 +119,109 @@
                         </div>
                     </td>
                     <td class="p-6">
-                        <div class="flex items-center gap-2">
-                            <div class="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-emerald-400 h-full" style="width: ${(vocaCount/30)*100}%"></div>
-                            </div>
-                            <span class="text-[10px] font-bold text-slate-500">${vocaCount}/30D</span>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black rounded-md border border-emerald-100 italic">VOCA ${vocaCount}D</span>
+                            ${studentLogs.some(l => l.unit.includes('Shadowing')) ? '<span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[9px] font-black rounded-md border border-indigo-100 italic">PART1</span>' : ''}
+                            ${studentLogs.some(l => l.unit.includes('LCpart2') || l.unit.includes('Part2')) ? '<span class="px-2 py-0.5 bg-rose-50 text-rose-600 text-[9px] font-black rounded-md border border-rose-100 italic">PART2</span>' : ''}
                         </div>
                     </td>
                     <td class="p-6">
                         ${recentLog ? `
                             <div class="flex flex-col">
                                 <span class="text-[10px] font-black text-indigo-500 uppercase">${recentLog.unit.replace(/_/g, ' ')}</span>
-                                <span class="text-[9px] text-slate-400">${new Date(recentLog.timestamp?.toDate()).toLocaleDateString()} 완료</span>
+                                <span class="text-[9px] text-slate-400">${new Date(recentLog.timestamp?.toDate()).toLocaleDateString()}</span>
                             </div>
                         ` : '<span class="text-slate-200 italic text-[10px]">기록 없음</span>'}
                     </td>
                     <td class="p-6 text-center">
-                        <i class="fa-solid fa-chevron-right text-slate-200 group-hover:text-indigo-300 transition-all"></i>
+                        <i class="fa-solid fa-arrow-right-long text-slate-200 group-hover:text-indigo-500 transition-all"></i>
                     </td>
                 `;
                 list.appendChild(row);
             });
         }
 
-        // 3. 🌟 통합 대시보드 표시 (핵심 기능)
         window.showStudentDashboard = (name, id) => {
             const student = studentsData.find(s => s.userId === id);
             const studentLogs = allHomeworkLogs.filter(log => log.studentId === id || log.student === name);
             
             document.getElementById('modal-student-name').innerText = name;
-            document.getElementById('modal-student-id').innerText = `학번/ID: ${id} | ${student?.userClass || '-'}반`;
+            document.getElementById('modal-student-id').innerText = `학번: ${id} | ${student?.userClass || '-'}반`;
 
-            // 쉐도잉 진척도 계산 (가장 높은 Set 찾기)
+            // 과제별 통계 계산
             let maxShadowSet = 0;
+            let lc2Count = 0;
+            let grammarCount = 0;
+
             studentLogs.forEach(log => {
-                if (log.unit.includes('Shadowing')) {
-                    const match = log.unit.match(/Set(\d+)/);
-                    if (match && parseInt(match[1]) > maxShadowSet) maxShadowSet = parseInt(match[1]);
+                const u = log.unit || "";
+                if (u.includes('Shadowing')) {
+                    const m = u.match(/Set(\d+)/);
+                    if (m && parseInt(m[1]) > maxShadowSet) maxShadowSet = parseInt(m[1]);
+                } else if (u.includes('LCpart2') || u.includes('Part2')) {
+                    lc2Count++;
+                } else if (u.includes('Grammar') || u.includes('Unit')) {
+                    grammarCount++;
                 }
             });
 
             const vocaCount = student?.passedVocaDays ? student.passedVocaDays.length : 0;
-            const shadowPercent = (maxShadowSet / 5) * 100;
-            const vocaPercent = (vocaCount / 30) * 100;
-
-            let timelineHTML = studentLogs.map(log => {
-                const date = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "-";
-                return `
-                    <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <div class="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center text-indigo-500 flex-shrink-0">
-                            <i class="fa-solid ${log.unit.includes('Shadowing') ? 'fa-microphone' : 'fa-book-open'} text-xs"></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${log.unit.replace(/_/g, ' ')}</p>
-                            <p class="text-sm font-black text-slate-800">${log.score} / ${log.total} <span class="ml-2 text-[10px] text-emerald-500">Completed</span></p>
-                            <p class="text-[9px] text-slate-400 mt-1">${date}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
 
             document.getElementById('modal-content').innerHTML = `
                 <div class="bg-indigo-600 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
-                    <i class="fa-solid fa-microphone absolute -right-4 -bottom-4 text-8xl text-indigo-500 opacity-20"></i>
-                    <div class="relative z-10">
-                        <h3 class="text-xs font-black text-indigo-200 uppercase tracking-[0.2em] mb-4">Shadowing Progress</h3>
-                        <div class="flex items-end justify-between mb-2">
-                            <span class="text-4xl font-black italic">${shadowPercent}%</span>
-                            <span class="text-xs font-bold text-indigo-200">${maxShadowSet * 20} / 100 Sentences</span>
-                        </div>
-                        <div class="w-full bg-indigo-800/50 h-3 rounded-full overflow-hidden">
-                            <div class="bg-white h-full transition-all duration-1000" style="width: ${shadowPercent}%"></div>
-                        </div>
+                    <i class="fa-solid fa-microphone absolute -right-4 -top-4 text-7xl text-indigo-500 opacity-30 rotate-12"></i>
+                    <h3 class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-4">Part 1 Shadowing</h3>
+                    <div class="flex items-end justify-between mb-3">
+                        <span class="text-4xl font-black italic">${(maxShadowSet/5*100)}%</span>
+                        <span class="text-xs font-bold text-indigo-100">${maxShadowSet} / 5 Sets</span>
                     </div>
+                    <div class="w-full bg-indigo-900/40 h-2 rounded-full overflow-hidden"><div class="bg-white h-full" style="width: ${(maxShadowSet/5*100)}%"></div></div>
+                </div>
+
+                <div class="bg-rose-500 rounded-[2rem] p-6 text-white shadow-xl shadow-rose-100 relative overflow-hidden">
+                    <i class="fa-solid fa-headphones absolute -right-4 -top-4 text-7xl text-rose-400 opacity-30 -rotate-12"></i>
+                    <h3 class="text-[10px] font-black text-rose-100 uppercase tracking-widest mb-4">Part 2 Real Test</h3>
+                    <div class="flex items-end justify-between mb-3">
+                        <span class="text-4xl font-black italic">${Math.min((lc2Count/5*100), 100)}%</span>
+                        <span class="text-xs font-bold text-rose-100">${lc2Count} / 5 Times</span>
+                    </div>
+                    <div class="w-full bg-rose-900/40 h-2 rounded-full overflow-hidden"><div class="bg-white h-full" style="width: ${Math.min((lc2Count/5*100), 100)}%"></div></div>
+                </div>
+
+                <div class="bg-blue-500 rounded-[2rem] p-6 text-white shadow-xl shadow-blue-100 relative overflow-hidden">
+                    <i class="fa-solid fa-pen-to-square absolute -right-4 -top-4 text-7xl text-blue-400 opacity-30 rotate-12"></i>
+                    <h3 class="text-[10px] font-black text-blue-100 uppercase tracking-widest mb-4">Grammar Mission</h3>
+                    <div class="flex items-end justify-between mb-3">
+                        <span class="text-4xl font-black italic">${Math.min((grammarCount/10*100), 100)}%</span>
+                        <span class="text-xs font-bold text-blue-100">${grammarCount} / 10 Times</span>
+                    </div>
+                    <div class="w-full bg-blue-900/40 h-2 rounded-full overflow-hidden"><div class="bg-white h-full" style="width: ${Math.min((grammarCount/10*100), 100)}%"></div></div>
                 </div>
 
                 <div class="bg-emerald-500 rounded-[2rem] p-6 text-white shadow-xl shadow-emerald-100 relative overflow-hidden">
-                    <i class="fa-solid fa-book-open absolute -right-4 -bottom-4 text-8xl text-emerald-400 opacity-20"></i>
-                    <div class="relative z-10">
-                        <h3 class="text-xs font-black text-emerald-100 uppercase tracking-[0.2em] mb-4">Vocabulary Mastery</h3>
-                        <div class="flex items-end justify-between mb-2">
-                            <span class="text-4xl font-black italic">${vocaPercent.toFixed(0)}%</span>
-                            <span class="text-xs font-bold text-emerald-100">${vocaCount} / 30 Days</span>
-                        </div>
-                        <div class="w-full bg-emerald-700/30 h-3 rounded-full overflow-hidden">
-                            <div class="bg-white h-full transition-all duration-1000" style="width: ${vocaPercent}%"></div>
-                        </div>
+                    <i class="fa-solid fa-book absolute -right-4 -top-4 text-7xl text-emerald-400 opacity-30 -rotate-12"></i>
+                    <h3 class="text-[10px] font-black text-emerald-100 uppercase tracking-widest mb-4">Vocabulary</h3>
+                    <div class="flex items-end justify-between mb-3">
+                        <span class="text-4xl font-black italic">${(vocaCount/30*100).toFixed(0)}%</span>
+                        <span class="text-xs font-bold text-emerald-100">${vocaCount} / 30 Days</span>
                     </div>
+                    <div class="w-full bg-emerald-900/40 h-2 rounded-full overflow-hidden"><div class="bg-white h-full" style="width: ${(vocaCount/30*100)}%"></div></div>
                 </div>
 
-                <div>
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 pl-1">Recent Activities</h3>
+                <div class="mt-8">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 pl-1">Recent 5 Logs</h3>
                     <div class="space-y-3">
-                        ${timelineHTML || '<p class="text-center py-10 text-slate-300 font-bold">활동 기록이 없습니다.</p>'}
+                        ${studentLogs.slice(0, 5).map(log => `
+                            <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">${log.unit.replace(/_/g, ' ')}</p>
+                                    <p class="text-xs font-bold text-slate-700">${new Date(log.timestamp?.toDate()).toLocaleString()}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-black text-indigo-600">${log.score}</span><span class="text-[10px] text-slate-400">/${log.total}</span>
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
             `;
