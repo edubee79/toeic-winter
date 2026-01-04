@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Student Management</title>
+    <title>Admin Dashboard | 통합 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
@@ -12,13 +12,13 @@
     <div class="max-w-6xl mx-auto">
         <header class="flex justify-between items-center mb-10">
             <div>
-                <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Student Status</h1>
-                <p class="text-slate-500 text-xs font-bold mt-1">실시간 문법 숙제 및 단어 현황 (이름 클릭 시 상세로그)</p>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Management <span class="text-indigo-600">Pro</span></h1>
+                <p class="text-slate-500 text-xs font-bold mt-1">학생의 모든 과제 진행 현황을 한눈에 관리하세요.</p>
             </div>
             
             <div class="flex items-center gap-4">
-                <button onclick="location.href='Manager_Logs.html'" class="px-5 py-2.5 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-list-check"></i> 상세 제출 로그 보기
+                <button onclick="location.href='Manager_Logs.html'" class="px-5 py-2.5 bg-white text-slate-600 rounded-2xl text-xs font-black border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-list-ul"></i> 전체 로그
                 </button>
 
                 <div id="filter-container" class="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200">
@@ -32,33 +32,35 @@
         <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-200">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Class</th>
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student Info</th>
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Voca Progress</th>
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-indigo-50/30 text-indigo-500">Grammar Homework (Recent)</th>
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Shadowing</th>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <th class="p-6">Class</th>
+                        <th class="p-6">Student Info</th>
+                        <th class="p-6">Voca Mastery</th>
+                        <th class="p-6 text-indigo-500">Recent Shadowing</th>
+                        <th class="p-6 text-center">Status</th>
                     </tr>
                 </thead>
                 <tbody id="student-list">
-                    <tr><td colspan="5" class="p-20 text-center text-slate-300 font-bold"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i> 로딩 중...</td></tr>
+                    <tr><td colspan="5" class="p-20 text-center text-slate-300 font-bold"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i> 데이터를 불러오는 중...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <div id="detail-modal" class="fixed inset-0 z-[100] hidden bg-slate-900/60 backdrop-blur-sm flex justify-end">
-        <div class="w-full max-w-lg bg-white h-full shadow-2xl p-8 overflow-y-auto animate-slide-in">
-            <div class="flex justify-between items-center mb-8">
+        <div class="w-full max-w-lg bg-white h-full shadow-2xl overflow-y-auto animate-slide-in flex flex-col">
+            <div class="p-8 border-b sticky top-0 bg-white/90 backdrop-blur-md z-10 flex justify-between items-center">
                 <div>
-                    <h2 id="modal-student-name" class="text-2xl font-black text-slate-900">학습 기록</h2>
-                    <p id="modal-student-id" class="text-xs text-slate-400 font-bold"></p>
+                    <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">Student Dashboard</p>
+                    <h2 id="modal-student-name" class="text-3xl font-black text-slate-900 tracking-tight">학습 기록</h2>
+                    <p id="modal-student-id" class="text-xs text-slate-400 font-bold mt-1 tracking-tighter"></p>
                 </div>
-                <button onclick="closeModal()" class="w-10 h-10 bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all">
-                    <i class="fa-solid fa-xmark"></i>
+                <button onclick="closeModal()" class="w-12 h-12 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
-            <div id="modal-timeline" class="space-y-4">
+
+            <div id="modal-content" class="p-8 space-y-10">
                 </div>
         </div>
     </div>
@@ -78,120 +80,149 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let allHomeworkLogs = []; // 전체 로그를 담아둘 변수
-        let homeworkResults = {};
+        let allHomeworkLogs = [];
+        let studentsData = [];
         let currentFilter = 'all';
 
-        function listenToHomework() {
+        // 1. 실시간 로그 감시
+        function listenToLogs() {
             const q = query(collection(db, "Manager_Results"), orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => {
-                allHomeworkLogs = []; // 초기화
-                homeworkResults = {};
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    allHomeworkLogs.push(data); // 모든 로그 저장
-                    if (!homeworkResults[data.student]) {
-                        homeworkResults[data.student] = data;
-                    }
-                });
+                allHomeworkLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 loadStudents();
             });
         }
 
+        // 2. 학생 목록 로드 및 렌더링
         async function loadStudents() {
             const querySnapshot = await getDocs(collection(db, "Winter_Users"));
+            studentsData = querySnapshot.docs.map(doc => doc.data());
+            
             const list = document.getElementById('student-list');
             list.innerHTML = '';
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const hw = homeworkResults[data.userId] || homeworkResults[data.userName] || null;
-                
+            studentsData.forEach(student => {
+                if (currentFilter !== 'all' && String(student.userClass) !== currentFilter) return;
+
+                // 해당 학생의 가장 최근 로그 찾기
+                const studentLogs = allHomeworkLogs.filter(log => log.studentId === student.userId || log.student === student.userName);
+                const recentLog = studentLogs[0];
+
                 const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50 transition-colors border-b border-slate-50 group";
-                row.setAttribute('data-class', String(data.userClass));
+                row.className = "hover:bg-slate-50 transition-colors border-b border-slate-50 group cursor-pointer";
+                row.setAttribute('onclick', `showStudentDashboard('${student.userName}', '${student.userId}')`);
+                row.setAttribute('data-class', String(student.userClass));
+
+                const vocaCount = student.passedVocaDays ? student.passedVocaDays.length : 0;
                 
-                if (currentFilter !== 'all' && String(data.userClass) !== currentFilter) {
-                    row.style.display = 'none';
-                }
-
-                let hwBadge = `<span class="text-slate-300 italic text-[10px]">No Record</span>`;
-                if(hw) {
-                    const scoreColor = hw.score / hw.total >= 0.8 ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600';
-                    hwBadge = `
-                        <div class="flex flex-col">
-                            <span class="text-[10px] font-black text-indigo-500 mb-1">${hw.unit.replace(/_/g, ' ')}</span>
-                            <span class="${scoreColor} px-2 py-1 rounded-md text-[10px] font-black w-fit">${hw.score} / ${hw.total}</span>
-                        </div>
-                    `;
-                }
-
-                let shadowingText = '기록 없음';
-                const shadowList = [];
-                if (data.completed_shadowing) shadowList.push(...data.completed_shadowing);
-                if (data.com_shadowing2) shadowList.push(`Part2(${data.com_shadowing2})`);
-                if (shadowList.length > 0) shadowingText = shadowList.join(', ');
-
                 row.innerHTML = `
-                    <td class="p-5 font-bold text-slate-500">${data.userClass}반</td>
-                    <td class="p-5">
-                        <button onclick="showStudentHistory('${data.userName}', '${data.userId}')" class="flex flex-col text-left group/btn">
-                            <span class="font-black text-slate-900 group-hover/btn:text-indigo-600 transition-colors underline decoration-slate-200 underline-offset-4">${data.userName || '미입력'}</span>
-                            <span class="text-[10px] text-slate-400 font-medium">${data.userId}</span>
-                        </button>
-                    </td>
-                    <td class="p-5">
-                        <div class="flex flex-wrap gap-1">
-                            ${data.passedVocaDays ? data.passedVocaDays.map(day => `<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-bold">DAY ${day}</span>`).join('') : '-'}
+                    <td class="p-6 font-bold text-slate-400 text-sm">${student.userClass}반</td>
+                    <td class="p-6">
+                        <div class="flex flex-col text-left">
+                            <span class="font-black text-slate-900 group-hover:text-indigo-600 transition-colors">${student.userName || '미입력'}</span>
+                            <span class="text-[10px] text-slate-400 font-medium">${student.userId}</span>
                         </div>
                     </td>
-                    <td class="p-5 bg-indigo-50/10">${hwBadge}</td>
-                    <td class="p-5">
-                        <p class="text-[10px] text-slate-400 line-clamp-2 max-w-[120px]">${shadowingText}</p>
+                    <td class="p-6">
+                        <div class="flex items-center gap-2">
+                            <div class="w-20 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-emerald-400 h-full" style="width: ${(vocaCount/30)*100}%"></div>
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-500">${vocaCount}/30D</span>
+                        </div>
+                    </td>
+                    <td class="p-6">
+                        ${recentLog ? `
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-black text-indigo-500 uppercase">${recentLog.unit.replace(/_/g, ' ')}</span>
+                                <span class="text-[9px] text-slate-400">${new Date(recentLog.timestamp?.toDate()).toLocaleDateString()} 완료</span>
+                            </div>
+                        ` : '<span class="text-slate-200 italic text-[10px]">기록 없음</span>'}
+                    </td>
+                    <td class="p-6 text-center">
+                        <i class="fa-solid fa-chevron-right text-slate-200 group-hover:text-indigo-300 transition-all"></i>
                     </td>
                 `;
                 list.appendChild(row);
             });
         }
 
-        // ✅ 특정 학생 상세 로그 보여주기 함수
-        window.showStudentHistory = (name, id) => {
-            const modal = document.getElementById('detail-modal');
-            const timeline = document.getElementById('modal-timeline');
-            document.getElementById('modal-student-name').innerText = `${name} 학생 기록`;
-            document.getElementById('modal-student-id').innerText = `ID: ${id}`;
+        // 3. 🌟 통합 대시보드 표시 (핵심 기능)
+        window.showStudentDashboard = (name, id) => {
+            const student = studentsData.find(s => s.userId === id);
+            const studentLogs = allHomeworkLogs.filter(log => log.studentId === id || log.student === name);
             
-            // 해당 학생의 로그만 필터링 (이름 또는 ID 기준)
-            const history = allHomeworkLogs.filter(log => log.student === name || log.studentId === id);
-            
-            timeline.innerHTML = '';
-            if(history.length === 0) {
-                timeline.innerHTML = `<p class="p-10 text-center text-slate-300 font-bold">제출된 로그가 없습니다.</p>`;
-            } else {
-                history.forEach(log => {
-                    const date = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString('ko-KR', {
-                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                    }) : "시간 정보 없음";
-                    const isPass = (log.score / log.total) >= 0.8;
-                    
-                    const item = document.createElement('div');
-                    item.className = "p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center";
-                    item.innerHTML = `
-                        <div>
-                            <p class="text-[10px] font-black text-indigo-500 uppercase">${log.unit.replace(/_/g, ' ')}</p>
-                            <p class="text-[9px] text-slate-400 font-medium mb-1">${date}</p>
-                            <span class="text-sm font-black text-slate-900">${log.score} <span class="text-slate-300">/</span> ${log.total}</span>
+            document.getElementById('modal-student-name').innerText = name;
+            document.getElementById('modal-student-id').innerText = `학번/ID: ${id} | ${student?.userClass || '-'}반`;
+
+            // 쉐도잉 진척도 계산 (가장 높은 Set 찾기)
+            let maxShadowSet = 0;
+            studentLogs.forEach(log => {
+                if (log.unit.includes('Shadowing')) {
+                    const match = log.unit.match(/Set(\d+)/);
+                    if (match && parseInt(match[1]) > maxShadowSet) maxShadowSet = parseInt(match[1]);
+                }
+            });
+
+            const vocaCount = student?.passedVocaDays ? student.passedVocaDays.length : 0;
+            const shadowPercent = (maxShadowSet / 5) * 100;
+            const vocaPercent = (vocaCount / 30) * 100;
+
+            let timelineHTML = studentLogs.map(log => {
+                const date = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : "-";
+                return `
+                    <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div class="w-8 h-8 bg-white rounded-xl shadow-sm flex items-center justify-center text-indigo-500 flex-shrink-0">
+                            <i class="fa-solid ${log.unit.includes('Shadowing') ? 'fa-microphone' : 'fa-book-open'} text-xs"></i>
                         </div>
-                        <div class="${isPass ? 'text-emerald-500' : 'text-rose-500'} font-black text-xs">
-                            ${isPass ? 'PASS' : 'RETAKE'}
+                        <div class="flex-1">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${log.unit.replace(/_/g, ' ')}</p>
+                            <p class="text-sm font-black text-slate-800">${log.score} / ${log.total} <span class="ml-2 text-[10px] text-emerald-500">Completed</span></p>
+                            <p class="text-[9px] text-slate-400 mt-1">${date}</p>
                         </div>
-                    `;
-                    timeline.appendChild(item);
-                });
-            }
-            
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('modal-content').innerHTML = `
+                <div class="bg-indigo-600 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                    <i class="fa-solid fa-microphone absolute -right-4 -bottom-4 text-8xl text-indigo-500 opacity-20"></i>
+                    <div class="relative z-10">
+                        <h3 class="text-xs font-black text-indigo-200 uppercase tracking-[0.2em] mb-4">Shadowing Progress</h3>
+                        <div class="flex items-end justify-between mb-2">
+                            <span class="text-4xl font-black italic">${shadowPercent}%</span>
+                            <span class="text-xs font-bold text-indigo-200">${maxShadowSet * 20} / 100 Sentences</span>
+                        </div>
+                        <div class="w-full bg-indigo-800/50 h-3 rounded-full overflow-hidden">
+                            <div class="bg-white h-full transition-all duration-1000" style="width: ${shadowPercent}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-500 rounded-[2rem] p-6 text-white shadow-xl shadow-emerald-100 relative overflow-hidden">
+                    <i class="fa-solid fa-book-open absolute -right-4 -bottom-4 text-8xl text-emerald-400 opacity-20"></i>
+                    <div class="relative z-10">
+                        <h3 class="text-xs font-black text-emerald-100 uppercase tracking-[0.2em] mb-4">Vocabulary Mastery</h3>
+                        <div class="flex items-end justify-between mb-2">
+                            <span class="text-4xl font-black italic">${vocaPercent.toFixed(0)}%</span>
+                            <span class="text-xs font-bold text-emerald-100">${vocaCount} / 30 Days</span>
+                        </div>
+                        <div class="w-full bg-emerald-700/30 h-3 rounded-full overflow-hidden">
+                            <div class="bg-white h-full transition-all duration-1000" style="width: ${vocaPercent}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 pl-1">Recent Activities</h3>
+                    <div class="space-y-3">
+                        ${timelineHTML || '<p class="text-center py-10 text-slate-300 font-bold">활동 기록이 없습니다.</p>'}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         };
 
         window.closeModal = () => {
@@ -201,29 +232,17 @@
 
         window.filterClass = (cls, btn) => {
             currentFilter = String(cls);
-            const btns = document.querySelectorAll('.filter-btn');
-            btns.forEach(b => b.className = "filter-btn px-5 py-2 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all");
+            document.querySelectorAll('.filter-btn').forEach(b => b.className = "filter-btn px-5 py-2 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all");
             btn.className = "filter-btn px-5 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-200";
-
-            const rows = document.querySelectorAll('#student-list tr');
-            rows.forEach(row => {
-                const userClass = row.getAttribute('data-class');
-                if(cls === 'all') row.style.display = '';
-                else row.style.display = (userClass === cls) ? '' : 'none';
-            });
+            loadStudents();
         };
 
-        listenToHomework();
+        listenToLogs();
     </script>
 
     <style>
-        @keyframes slide-in {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-        .animate-slide-in {
-            animation: slide-in 0.3s ease-out;
-        }
+        @keyframes slide-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .animate-slide-in { animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     </style>
 </body>
 </html>
