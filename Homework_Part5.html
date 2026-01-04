@@ -35,24 +35,29 @@
                 <p id="q-text" class="text-lg font-bold mt-4 leading-relaxed text-slate-200 min-h-[80px]">데이터를 불러오는 중입니다...</p>
             </div>
 
-            <div id="options-grid" class="grid gap-3">
-                </div>
+            <div id="options-grid" class="grid gap-3"></div>
         </div>
 
-        <div id="result-screen" class="hidden text-center py-10">
-            <div class="w-24 h-24 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-500 text-4xl shadow-2xl shadow-indigo-500/20">
-                <i class="fa-solid fa-trophy"></i>
+        <div id="result-screen" class="hidden py-4 space-y-8">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-500 text-3xl">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="text-3xl font-black mb-1 tracking-tighter uppercase">Mission Complete</h2>
+                <p id="final-score" class="text-slate-400 font-bold mb-6 italic text-lg"></p>
+                
+                <div class="grid grid-cols-2 gap-3 mb-10">
+                    <button onclick="location.href='Part5_Lobby.html'" class="bg-indigo-600 hover:bg-indigo-500 py-4 rounded-2xl font-black shadow-lg transition-all active:scale-95 text-sm">로비로 이동</button>
+                    <button onclick="location.reload()" class="bg-slate-800 hover:bg-slate-700 py-4 rounded-2xl font-black transition-all text-sm">다시 풀기</button>
+                </div>
             </div>
-            <h2 class="text-3xl font-black mb-2 tracking-tighter">MISSION COMPLETE</h2>
-            <p id="final-score" class="text-slate-400 mb-8 font-medium"></p>
-            
-            <div class="space-y-3">
-                <button onclick="location.href='Part5_Lobby.html'" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-2xl font-black shadow-lg shadow-indigo-500/30 transition-all active:scale-95">
-                    다른 유닛 도전하기
-                </button>
-                <button onclick="location.reload()" class="w-full bg-slate-800 hover:bg-slate-700 py-4 rounded-2xl font-black transition-all">
-                    다시 풀기
-                </button>
+
+            <div id="wrong-note-section" class="space-y-4">
+                <h3 class="text-sm font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <i class="fa-solid fa-book-open"></i> Incorrect Notes
+                </h3>
+                <div id="wrong-details-container" class="space-y-6">
+                    </div>
             </div>
         </div>
     </main>
@@ -72,7 +77,7 @@
 
         // 2. 변수 설정
         const urlParams = new URLSearchParams(window.location.search);
-        const unitId = urlParams.get('unit'); // URL에서 ?unit=Unit_... 값을 읽음
+        const unitId = urlParams.get('unit'); 
         
         let questions = [];
         let currentIndex = 0;
@@ -101,25 +106,23 @@
             }
         }
 
-        // 4. 문제 렌더링 (화면에 그리기)
+        // 4. 문제 렌더링
         function renderQuestion() {
             const q = questions[currentIndex];
             document.getElementById('q-no').innerText = String(currentIndex + 1).padStart(2, '0');
             document.getElementById('q-text').innerText = q.question;
             
-            // 진행 바 업데이트
             const progressBar = document.getElementById('progress-bar');
             progressBar.style.width = `${((currentIndex) / questions.length) * 100}%`;
 
             const grid = document.getElementById('options-grid');
             grid.innerHTML = '';
 
-            // A, B, C, D 버튼 생성
             ['a', 'b', 'c', 'd'].forEach(key => {
                 const btn = document.createElement('button');
                 btn.className = "w-full p-5 bg-slate-800 border border-slate-700 rounded-2xl text-left font-bold hover:bg-slate-700 active:scale-[0.98] transition-all flex items-center group";
                 btn.innerHTML = `
-                    <span class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center mr-4 text-xs text-indigo-400 font-black border border-slate-700 group-hover:border-indigo-500">
+                    <span class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center mr-4 text-xs text-indigo-400 font-black border border-slate-700 group-hover:border-indigo-500 shrink-0">
                         ${key.toUpperCase()}
                     </span> 
                     <span class="text-slate-200">${q.options[key]}</span>
@@ -135,9 +138,11 @@
             const isCorrect = selected === q.answer;
             if(isCorrect) score++;
 
-            // 상세 기록 저장 (나중에 오답노트용)
+            // 상세 기록 저장 (오답 노트 생성용)
             logs.push({
-                q_no: q.question_no,
+                question_no: q.question_no || (currentIndex + 1),
+                question_text: q.question,
+                options: q.options,
                 is_correct: isCorrect,
                 user_choice: selected,
                 correct_answer: q.answer
@@ -151,28 +156,70 @@
             }
         }
 
-        // 6. 결과 저장 및 종료 화면 표시
+        // 6. 결과 저장 및 종료 화면 표시 (오답 노트 포함)
         async function saveAndShowResult() {
-            // 화면 전환
             document.getElementById('quiz-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('progress-bar').style.width = '100%';
-            document.getElementById('final-score').innerText = `총 ${questions.length}문제 중 ${score}문제를 해결했습니다.`;
+            document.getElementById('final-score').innerText = `SCORE: ${score} / ${questions.length}`;
 
-            // --- [로그인 정보 연동] ---
+            // 오답 노트 생성
+            const container = document.getElementById('wrong-details-container');
+            container.innerHTML = '';
+
+            const wrongQuestions = logs.filter(log => !log.is_correct);
+
+            if (wrongQuestions.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center bg-indigo-500/10 rounded-3xl border border-indigo-500/30">
+                        <p class="text-indigo-400 font-black">만점입니다! 복습할 오답이 없습니다. 🎉</p>
+                    </div>
+                `;
+            } else {
+                wrongQuestions.forEach(log => {
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-800/50 rounded-3xl p-6 border border-slate-700 shadow-lg";
+                    
+                    let optionsHtml = ['a', 'b', 'c', 'd'].map(key => {
+                        const isCorrect = key === log.correct_answer;
+                        const isUserChoice = key === log.user_choice;
+                        
+                        let stateClass = "bg-slate-900/50 border-slate-800 text-slate-500";
+                        if (isCorrect) stateClass = "bg-emerald-500/10 border-emerald-500/40 text-emerald-400 font-bold";
+                        if (isUserChoice && !isCorrect) stateClass = "bg-rose-500/10 border-rose-500/40 text-rose-400";
+
+                        return `
+                            <div class="flex items-center gap-3 p-3 rounded-xl border ${stateClass} mb-2 last:mb-0">
+                                <span class="text-[10px] font-black uppercase">(${key})</span>
+                                <span class="text-xs">${log.options[key]}</span>
+                                ${isCorrect ? '<i class="fa-solid fa-check ml-auto text-[10px]"></i>' : ''}
+                            </div>
+                        `;
+                    }).join('');
+
+                    card.innerHTML = `
+                        <div class="mb-3 flex justify-between">
+                            <span class="text-[10px] font-black text-rose-500 uppercase tracking-widest">Question ${log.question_no}</span>
+                        </div>
+                        <p class="text-sm font-bold text-slate-200 mb-4 leading-relaxed">${log.question_text}</p>
+                        <div class="space-y-1">
+                            ${optionsHtml}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            // --- [로그인 정보 연동 및 저장] ---
             const storedUser = localStorage.getItem('toeic_user');
-            let studentName = "미확인 학생";
-            let studentId = "Unknown";
-            let studentClass = "Unknown";
-
+            let studentName = "Unknown", studentId = "Unknown", studentClass = "Unknown";
             if (storedUser) {
-                const userData = JSON.parse(storedUser); // 문자열을 객체로 변환
+                const userData = JSON.parse(storedUser);
                 studentName = userData.userName;
                 studentId = userData.userId;
                 studentClass = userData.userClass;
             }
 
-            // --- [관리자 저장소(Manager_Results)로 전송] ---
             try {
                 await db.collection("Manager_Results").add({
                     unit: unitId,
@@ -181,15 +228,12 @@
                     studentClass: studentClass,
                     score: score,
                     total: questions.length,
-                    details: logs, // 상세 정오답 기록
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp() // 서버 시간 기준 저장
+                    details: logs,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-            } catch(e) {
-                console.error("데이터 저장 실패: ", e);
-            }
+            } catch(e) { console.error("데이터 저장 실패: ", e); }
         }
 
-        // 실행 시작
         initQuiz();
     </script>
 </body>
