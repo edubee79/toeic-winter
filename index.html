@@ -20,72 +20,172 @@
         
         <div class="flex items-center gap-3">
             <span id="user-display" class="text-[10px] font-bold text-slate-400 text-right">데이터 로딩 중...</span>
-            <button onclick="handleLogout()" class="text-[10px] bg-slate-800 text-rose-400 px-2 py-1 rounded-md border border-rose-500/30 font-black hover:bg-rose-500 hover:text-white transition-all">
-                EXIT
-            </button>
+            <button id="logout-btn" onclick="handleLogout()" class="text-[10px] bg-slate-800 text-rose-400 px-2 py-1 rounded-md border border-rose-500/30 font-black hover:bg-rose-500 hover:text-white transition-all">EXIT</button>
         </div>
     </nav>
 
     <main class="max-w-md mx-auto px-6 pt-10 pb-20">
-        <div class="mb-10">
-            <h2 class="text-4xl font-black mb-2 tracking-tighter leading-tight">CHOOSE YOUR<br><span class="text-indigo-500">MISSION</span></h2>
-            <p class="text-slate-400 font-medium text-sm">목표를 달성하고 퇴근하세요!</p>
+        <div class="mb-8">
+            <h2 class="text-4xl font-black mb-2 tracking-tighter leading-tight">MY STUDY<br><span class="text-indigo-500 italic">REPORT</span></h2>
+            <p class="text-slate-400 font-medium text-xs">실시간 학습 데이터가 동기화됩니다.</p>
+        </div>
+
+        <div class="bg-slate-800/50 rounded-[2.5rem] p-7 border border-slate-700 shadow-2xl mb-12 relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl"></div>
+            
+            <div class="space-y-6 relative z-10">
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">🎙️ Part 1 Shadowing</span>
+                        <span id="shadow-percent-text" class="text-lg font-black text-indigo-400 leading-none">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div id="shadow-progress-bar" class="bg-indigo-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">🎧 Part 2 Real Test</span>
+                        <span id="lc2-status-text" class="text-lg font-black text-rose-400 leading-none">0회</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div id="lc2-progress-bar" class="bg-rose-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">📝 Grammar Mission</span>
+                        <span id="grammar-status-text" class="text-lg font-black text-blue-400 leading-none">0회</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div id="grammar-progress-bar" class="bg-blue-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">📚 Voca Mastery</span>
+                        <span id="voca-status-text" class="text-lg font-black text-emerald-400 leading-none">0/30D</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div id="voca-progress-bar" class="bg-emerald-400 h-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="grid gap-4">
-            <button onclick="location.href='Part5_Lobby.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg border-l-4 border-l-indigo-500">
-                <i class="fas fa-pen-to-square absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-indigo-500/30 transition-colors"></i>
-                <span class="text-indigo-500 font-black text-xs uppercase tracking-widest">Part 5</span>
+            <button onclick="location.href='Part5_Lobby.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden border-l-4 border-l-blue-500">
+                <i class="fas fa-pen-to-square absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-blue-500/30 transition-colors"></i>
+                <span class="text-blue-500 font-black text-[10px] uppercase tracking-widest">Part 5</span>
                 <h3 class="text-xl font-black mt-1">GRAMMAR MISSION</h3>
             </button>
-
-            <button onclick="location.href='shadowing1.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg">
+            <button onclick="location.href='shadowing1.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden border-l-4 border-l-indigo-500">
                 <i class="fas fa-microphone-alt absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-indigo-500/30 transition-colors"></i>
-                <span class="text-indigo-400 font-black text-xs uppercase tracking-widest">Part 1</span>
-                <h3 class="text-xl font-black mt-1">SHADOWING</h3>
+                <span class="text-indigo-500 font-black text-[10px] uppercase tracking-widest">Part 1</span>
+                <h3 class="text-xl font-black mt-1">SHADOWING MASTER</h3>
             </button>
-
-            <button onclick="location.href='shadowing2.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg border-l-4 border-l-rose-500">
+            <button onclick="location.href='shadowing2.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden border-l-4 border-l-rose-500">
                 <i class="fas fa-headphones absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-rose-500/30 transition-colors"></i>
-                <span class="text-rose-500 font-black text-xs uppercase tracking-widest">Part 2</span>
+                <span class="text-rose-500 font-black text-[10px] uppercase tracking-widest">Part 2</span>
                 <h3 class="text-xl font-black mt-1">REAL TEST</h3>
             </button>
-
-            <button onclick="location.href='voca.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg">
+            <button onclick="location.href='voca.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden border-l-4 border-l-amber-500">
                 <i class="fas fa-book-open absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-amber-500/30 transition-colors"></i>
-                <span class="text-amber-500 font-black text-xs uppercase tracking-widest">Vocabulary</span>
+                <span class="text-amber-500 font-black text-[10px] uppercase tracking-widest">Vocabulary</span>
                 <h3 class="text-xl font-black mt-1">WORD MASTER</h3>
             </button>
         </div>
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", 
+            authDomain: "eduthot-fb088.firebaseapp.com", 
+            projectId: "eduthot-fb088", 
+            storageBucket: "eduthot-fb088.firebasestorage.app", 
+            messagingSenderId: "919552710378", 
+            appId: "1:919552710378:web:7ba72ea2d195e092f8a993" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
             if (user && user.userId) {
-                const infoText = `${user.userClass}반 ${user.userName || ''} (${user.userId})`;
-                document.getElementById('user-display').innerText = infoText;
+                document.getElementById('user-display').innerText = `${user.userClass}반 ${user.userName} (${user.userId})`;
+                await fetchRealtimeReport(user.userId);
+                
+                // Voca
+                const vocaCount = user.passedVocaDays ? user.passedVocaDays.length : 0;
+                document.getElementById('voca-status-text').innerText = `${vocaCount}/30D`;
+                document.getElementById('voca-progress-bar').style.width = `${(vocaCount/30)*100}%`;
             } else {
                 location.href = 'login.html';
             }
         });
 
-        function handleLogout() {
+        async function fetchRealtimeReport(id) {
+            const q = query(collection(db, "Manager_Results"), where("studentId", "==", id));
+            const querySnapshot = await getDocs(q);
+            
+            let maxShadowSet = 0;
+            let lc2Count = 0;
+            let grammarCount = 0;
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const unitName = data.unit || "";
+
+                // 1. Shadowing (Part 1) 판별
+                if (unitName.includes('Shadowing')) {
+                    const match = unitName.match(/Set(\d+)/);
+                    if (match && parseInt(match[1]) > maxShadowSet) maxShadowSet = parseInt(match[1]);
+                } 
+                // 2. LC Part 2 (쉐도잉2 / 리얼테스트) 판별
+                else if (unitName.includes('LCpart2') || unitName.includes('Part2')) {
+                    lc2Count++;
+                }
+                // 3. Grammar (Part 5) 판별
+                else if (unitName.includes('Grammar') || unitName.includes('Unit')) {
+                    grammarCount++;
+                }
+            });
+
+            // UI 업데이트
+            // Shadowing (5세트 기준)
+            const shadowPercent = (maxShadowSet / 5) * 100;
+            document.getElementById('shadow-percent-text').innerText = `${shadowPercent}%`;
+            document.getElementById('shadow-progress-bar').style.width = `${shadowPercent}%`;
+
+            // LC Part 2 (목표 5회 기준)
+            const lc2Percent = Math.min((lc2Count / 5) * 100, 100);
+            document.getElementById('lc2-status-text').innerText = `${lc2Count}회 완료`;
+            document.getElementById('lc2-progress-bar').style.width = `${lc2Percent}%`;
+
+            // Grammar (목표 10회 기준)
+            const grammarPercent = Math.min((grammarCount / 10) * 100, 100);
+            document.getElementById('grammar-status-text').innerText = `${grammarCount}회 완료`;
+            document.getElementById('grammar-progress-bar').style.width = `${grammarPercent}%`;
+        }
+
+        window.handleLogout = () => {
             if (confirm("로그아웃 하시겠습니까?")) {
                 localStorage.removeItem('toeic_user');
                 location.href = 'login.html';
             }
-        }
+        };
 
-        function accessAdmin() {
+        window.accessAdmin = () => {
             const adminPassword = "Kang1818^^"; 
             const userInput = prompt("관리자 비밀번호를 입력하세요.");
-            if (userInput === adminPassword) {
-                location.href = "admin.html";
-            } else if (userInput !== null) {
-                alert("비밀번호가 일치하지 않습니다.");
-            }
-        }
+            if (userInput === adminPassword) location.href = "admin.html";
+        };
     </script>
 </body>
 </html>
