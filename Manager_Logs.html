@@ -16,7 +16,7 @@
             </div>
             
             <div class="flex gap-3">
-                <button onclick="location.href='Admin.html'" class="px-4 py-2 bg-white text-slate-600 rounded-xl text-xs font-black border border-slate-200 hover:bg-slate-100 transition-all flex items-center gap-2 shadow-sm">
+                <button onclick="location.href='admin.html'" class="px-4 py-2 bg-white text-slate-600 rounded-xl text-xs font-black border border-slate-200 hover:bg-slate-800 hover:text-white transition-all flex items-center gap-2 shadow-sm">
                     <i class="fa-solid fa-users"></i> 학생 현황판(Admin)
                 </button>
                 
@@ -93,6 +93,7 @@
             });
         });
 
+        // ✅ window 객체에 할당하여 버튼 클릭 이벤트가 인식되도록 함
         window.deleteLog = async (id) => {
             if(confirm("이 기록을 삭제하시겠습니까? 학생 성적 데이터에서 영구적으로 지워집니다.")) {
                 try {

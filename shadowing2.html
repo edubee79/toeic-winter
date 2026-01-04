@@ -18,7 +18,7 @@
             <button onclick="startTest(2)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 2</button>
             <button onclick="startTest(3)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 3</button>
             <button onclick="startTest(4)" class="py-4 bg-slate-800 rounded-2xl font-black border border-slate-700 active:scale-95 transition-all">TEST 4</button>
-            <button onclick="startTest(5)" class="py-4 bg-indigo-600 rounded-2xl font-black border border-indigo-500 active:scale-95 transition-all col-span-2 mt-2 shadow-lg shadow-indigo-500/20">학습 시작하기</button>
+            <button onclick="startTest(5)" class="py-4 bg-indigo-600 rounded-2xl font-black border border-indigo-500 active:scale-95 transition-all col-span-2 mt-2 shadow-lg shadow-indigo-500/20">TEST 5 시작</button>
         </div>
     </div>
 
@@ -51,16 +51,33 @@
             </div>
         </div>
 
-        <div id="review-overlay" class="hidden text-center py-20 space-y-6">
-            <h3 class="text-4xl font-black text-rose-500 italic">REVIEW</h3>
-            <p class="text-slate-400 font-bold">틀린 문제를 다시 완벽히 풀어보세요.</p>
-            <button onclick="startReview()" class="w-full py-6 bg-rose-600 rounded-3xl font-black text-xl shadow-2xl">복습 시작하기</button>
+        <div id="report-overlay" class="hidden text-center py-10 space-y-6">
+            <div class="mb-8">
+                <i class="fa-solid fa-square-poll-vertical text-6xl text-indigo-500 mb-4"></i>
+                <h2 class="text-3xl font-black text-white mb-2 tracking-tighter">MISSION COMPLETE</h2>
+                <p class="text-slate-400 font-bold">틀린 문제를 확인하고 복습하세요.</p>
+            </div>
+
+            <div class="bg-slate-800 rounded-[2.5rem] p-8 mb-8 border border-slate-700 shadow-xl">
+                <p class="text-indigo-400 font-black text-xs uppercase tracking-[0.2em] mb-4">Wrong Questions</p>
+                <div id="wrong-list-display" class="text-2xl font-black text-white leading-relaxed flex flex-wrap justify-center gap-2">
+                    </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <button id="review-start-btn" onclick="startReview()" class="w-full py-5 bg-indigo-600 rounded-2xl font-black text-lg shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> 틀린 문제 재학습
+                </button>
+                <button onclick="finishAll()" class="w-full py-5 bg-slate-800 border border-slate-700 rounded-2xl font-black text-lg text-slate-300 active:scale-95 transition-all">
+                    <i class="fa-solid fa-door-open mr-2"></i> 학습 종료 (기록 저장)
+                </button>
+            </div>
         </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", 
@@ -220,6 +237,7 @@
         let currentIdx = 0;
         let audio = new Audio();
 
+        // 퀴즈 시작 함수
         window.startTest = function(num) {
             currentTestNum = num;
             mainQueue = testBank[num];
@@ -228,9 +246,12 @@
             isReviewMode = false;
             currentIdx = 0;
             document.getElementById('start-overlay').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('report-overlay').classList.add('hidden');
             loadQuestion();
         };
 
+        // 문제 로드 함수
         function loadQuestion() {
             audio.pause();
             const list = isReviewMode ? wrongQueue : mainQueue;
@@ -253,6 +274,7 @@
             audio.src = `audio/Test_${tNum}-${qNum}.mp3`;
         }
 
+        // 오디오 재생 처리
         window.handlePlay = function() {
             audio.currentTime = 0;
             audio.play().catch(e => { document.getElementById('audio-status').innerText = "File Not Found"; });
@@ -268,6 +290,7 @@
             };
         };
 
+        // 정답 체크 함수
         window.checkAnswer = function(choice) {
             const list = isReviewMode ? wrongQueue : mainQueue;
             const data = list[currentIdx];
@@ -278,9 +301,18 @@
                 btn.classList.replace('bg-slate-800', 'bg-green-600');
                 btn.classList.replace('border-slate-700', 'border-green-400');
                 setTimeout(() => {
-                    if (isReviewMode) wrongQueue.splice(currentIdx, 1);
-                    else currentIdx++;
-                    checkNavigation(list);
+                    if (isReviewMode) {
+                        wrongQueue.splice(currentIdx, 1);
+                        if (wrongQueue.length === 0) finishAll(); // 모든 복습 완료 시
+                        else {
+                            if (currentIdx >= wrongQueue.length) currentIdx = 0;
+                            loadQuestion();
+                        }
+                    } else {
+                        currentIdx++;
+                        if (currentIdx >= mainQueue.length) showReport();
+                        else loadQuestion();
+                    }
                 }, 800);
             } else {
                 const btn = document.getElementById(`btn-${choice}`);
@@ -298,54 +330,59 @@
             }
         };
 
-        function checkNavigation(list) {
-            if (currentIdx >= list.length) {
-                if (!isReviewMode && wrongQueue.length > 0) showReviewPrompt();
-                else if (isReviewMode && wrongQueue.length > 0) { currentIdx = 0; loadQuestion(); }
-                else finishAll();
+        // 결과 리포트 출력 함수
+        function showReport() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('report-overlay').classList.remove('hidden');
+            
+            const listDisplay = document.getElementById('wrong-list-display');
+            listDisplay.innerHTML = '';
+
+            if (wrongQueue.length === 0) {
+                listDisplay.innerHTML = '<span class="text-emerald-400">Perfect! 모든 문제를 맞혔습니다. 🎉</span>';
+                document.getElementById('review-start-btn').classList.add('hidden');
             } else {
-                loadQuestion();
+                wrongQueue.forEach(q => {
+                    const span = document.createElement('span');
+                    span.className = "px-4 py-2 bg-rose-500/20 text-rose-500 rounded-xl border border-rose-500/30 text-sm font-bold";
+                    span.innerText = `Q.${q.id}`;
+                    listDisplay.appendChild(span);
+                });
+                document.getElementById('review-start-btn').classList.remove('hidden');
             }
         }
 
-       function showReviewPrompt() {
-            document.getElementById('quiz-container').classList.add('hidden');
-            document.getElementById('review-overlay').classList.remove('hidden');
-        }
-
+        // 복습 모드 시작
         window.startReview = function() {
             isReviewMode = true; 
             currentIdx = 0;
             document.getElementById('quiz-container').classList.remove('hidden');
-            document.getElementById('review-overlay').classList.add('hidden');
+            document.getElementById('report-overlay').classList.add('hidden');
             loadQuestion();
         };
 
-        // 전체 학습 완료 시 실행되는 함수
-        async function finishAll() {
+        // 최종 종료 및 데이터 저장
+        window.finishAll = async function() {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
             if (user) {
                 try {
-                    const today = new Date().toISOString().split('T')[0];
-                    
-                    // 핵심: shadowing2 필드에 날짜 기록 (merge: true로 기존 데이터 보호)
-                    await setDoc(doc(db, "Winter_Users", user.userId), {
-                        com_shadowing2: today,
-                        // 혹시 몰라 Part 2 학습 횟수를 카운트하고 싶다면 아래 주석 해제
-                        // shadowing2_count: increment(1) 
-                    }, { merge: true });
-                    
-                    alert("축하합니다! Part 2 실전 훈련을 모두 완료하셨습니다.");
-                    location.href = 'index.html';
+                    const finalScore = mainQueue.length - wrongQueue.length;
+                    // Firebase 데이터 전송 (Manager_Results 컬렉션)
+                    await setDoc(doc(db, "Manager_Results", `${user.userId}_Part2_${Date.now()}`), {
+                        student: user.userName,
+                        studentClass: user.userClass,
+                        unit: `LC_Part2_Test${currentTestNum}`,
+                        score: finalScore,
+                        total: mainQueue.length,
+                        timestamp: serverTimestamp()
+                    });
+                    alert("학습 결과가 저장되었습니다.");
                 } catch (e) {
                     console.error("데이터 저장 중 오류 발생:", e);
-                    alert("결과를 저장하지 못했습니다. 다시 시도해 주세요.");
                 }
-            } else {
-                alert("학습이 완료되었습니다! (로그인 정보가 없어 기록되지 않습니다.)");
-                location.href = 'index.html';
             }
-        }
+            location.href = 'index.html';
+        };
     </script>
 </body>
 </html>
