@@ -11,7 +11,13 @@
 <body class="bg-slate-900 text-white min-h-screen">
 
     <nav class="p-6 flex justify-between items-center max-w-md mx-auto border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-        <h1 class="font-black text-xl italic tracking-tighter text-indigo-400">WINTER CAMP</h1>
+        <div class="flex items-center gap-2">
+            <button onclick="accessAdmin()" class="text-slate-700 hover:text-slate-500 transition-colors">
+                <i class="fa-solid fa-shield-halved text-xs"></i>
+            </button>
+            <h1 class="font-black text-xl italic tracking-tighter text-indigo-400">WINTER CAMP</h1>
+        </div>
+        
         <div class="flex items-center gap-3">
             <span id="user-display" class="text-[10px] font-bold text-slate-400 text-right">데이터 로딩 중...</span>
             <button onclick="handleLogout()" class="text-[10px] bg-slate-800 text-rose-400 px-2 py-1 rounded-md border border-rose-500/30 font-black hover:bg-rose-500 hover:text-white transition-all">
@@ -51,19 +57,11 @@
                 <h3 class="text-xl font-black mt-1">WORD MASTER</h3>
             </button>
         </div>
-
-        <div class="mt-24 flex justify-center opacity-20 hover:opacity-100 transition-opacity">
-            <button onclick="accessAdmin()" class="flex items-center gap-2 text-slate-500 text-[9px] font-black tracking-[0.2em] uppercase border border-slate-800 px-4 py-2 rounded-full hover:bg-slate-800 hover:text-indigo-400 transition-all">
-                <i class="fas fa-shield-alt"></i> Access Admin
-            </button>
-        </div>
     </main>
 
     <script>
-        // ✅ 페이지 로드 시 사용자 정보 확인
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
-            
             if (user && user.userId) {
                 const infoText = `${user.userClass}반 ${user.userName || ''} (${user.userId})`;
                 document.getElementById('user-display').innerText = infoText;
@@ -79,11 +77,9 @@
             }
         }
 
-        // ✅ 관리자 접근 함수 (비밀번호 수정됨)
         function accessAdmin() {
-            const adminPassword = "Kang1818^^"; // 요청하신 대문자 포함 비밀번호
+            const adminPassword = "Kang1818^^"; 
             const userInput = prompt("관리자 비밀번호를 입력하세요.");
-            
             if (userInput === adminPassword) {
                 location.href = "admin.html";
             } else if (userInput !== null) {
