@@ -34,16 +34,15 @@
                 <span id="q-no" class="text-indigo-500 font-black text-5xl italic tracking-tighter">01</span>
                 <p id="q-text" class="text-lg font-bold mt-4 leading-relaxed text-slate-200 min-h-[80px]">데이터를 불러오는 중입니다...</p>
             </div>
-
             <div id="options-grid" class="grid gap-3"></div>
         </div>
 
         <div id="result-screen" class="hidden py-4 space-y-8">
             <div class="text-center">
-                <div class="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-500 text-3xl">
+                <div class="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-500 text-3xl shadow-2xl shadow-indigo-500/10">
                     <i class="fa-solid fa-trophy"></i>
                 </div>
-                <h2 class="text-3xl font-black mb-1 tracking-tighter uppercase">Mission Complete</h2>
+                <h2 class="text-3xl font-black mb-1 tracking-tighter uppercase text-white">Mission Complete</h2>
                 <p id="final-score" class="text-slate-400 font-bold mb-6 italic text-lg"></p>
                 
                 <div class="grid grid-cols-2 gap-3 mb-10">
@@ -53,17 +52,16 @@
             </div>
 
             <div id="wrong-note-section" class="space-y-4">
-                <h3 class="text-sm font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <i class="fa-solid fa-book-open"></i> Incorrect Notes
+                <h3 class="text-sm font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2 mb-6">
+                    <i class="fa-solid fa-book-open"></i> Incorrect Notes & Feedback
                 </h3>
-                <div id="wrong-details-container" class="space-y-6">
+                <div id="wrong-details-container" class="space-y-8">
                     </div>
             </div>
         </div>
     </main>
 
     <script>
-        // 1. Firebase 설정
         const firebaseConfig = {
             apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", 
             authDomain: "eduthot-fb088.firebaseapp.com",
@@ -75,7 +73,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 2. 변수 설정
         const urlParams = new URLSearchParams(window.location.search);
         const unitId = urlParams.get('unit'); 
         
@@ -84,14 +81,12 @@
         let score = 0;
         let logs = []; 
 
-        // 3. 퀴즈 데이터 초기화
         async function initQuiz() {
             if(!unitId) {
-                alert("유닛 정보가 없습니다. 로비로 이동합니다.");
+                alert("유닛 정보가 없습니다.");
                 location.href = 'Part5_Lobby.html';
                 return;
             }
-            
             try {
                 const doc = await db.collection("Review_Questions").doc(unitId).get();
                 if(doc.exists) {
@@ -99,21 +94,16 @@
                     document.getElementById('display-unit-title').innerText = unitId.replace(/_/g, ' ');
                     renderQuestion();
                 } else {
-                    alert("해당 유닛의 문제를 찾을 수 없습니다.");
+                    alert("문제를 찾을 수 없습니다.");
                 }
-            } catch (error) {
-                console.error("데이터 로딩 에러:", error);
-            }
+            } catch (error) { console.error(error); }
         }
 
-        // 4. 문제 렌더링
         function renderQuestion() {
             const q = questions[currentIndex];
             document.getElementById('q-no').innerText = String(currentIndex + 1).padStart(2, '0');
             document.getElementById('q-text').innerText = q.question;
-            
-            const progressBar = document.getElementById('progress-bar');
-            progressBar.style.width = `${((currentIndex) / questions.length) * 100}%`;
+            document.getElementById('progress-bar').style.width = `${((currentIndex) / questions.length) * 100}%`;
 
             const grid = document.getElementById('options-grid');
             grid.innerHTML = '';
@@ -125,27 +115,28 @@
                     <span class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center mr-4 text-xs text-indigo-400 font-black border border-slate-700 group-hover:border-indigo-500 shrink-0">
                         ${key.toUpperCase()}
                     </span> 
-                    <span class="text-slate-200">${q.options[key]}</span>
+                    <span class="text-slate-200 text-sm">${q.options[key]}</span>
                 `;
                 btn.onclick = () => handleAnswer(key);
                 grid.appendChild(btn);
             });
         }
 
-        // 5. 정답 확인 및 다음 문제 이동
         async function handleAnswer(selected) {
             const q = questions[currentIndex];
             const isCorrect = selected === q.answer;
             if(isCorrect) score++;
 
-            // 상세 기록 저장 (오답 노트 생성용)
+            // 해설과 해석을 포함하여 로그 저장
             logs.push({
                 question_no: q.question_no || (currentIndex + 1),
                 question_text: q.question,
                 options: q.options,
                 is_correct: isCorrect,
                 user_choice: selected,
-                correct_answer: q.answer
+                correct_answer: q.answer,
+                translation: q.translation || "해석 데이터가 없습니다.",
+                explanation: q.explanation || "해설 데이터가 없습니다."
             });
 
             if(currentIndex < questions.length - 1) {
@@ -156,61 +147,61 @@
             }
         }
 
-        // 6. 결과 저장 및 종료 화면 표시 (오답 노트 포함)
         async function saveAndShowResult() {
             document.getElementById('quiz-container').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('progress-bar').style.width = '100%';
             document.getElementById('final-score').innerText = `SCORE: ${score} / ${questions.length}`;
 
-            // 오답 노트 생성
             const container = document.getElementById('wrong-details-container');
             container.innerHTML = '';
 
             const wrongQuestions = logs.filter(log => !log.is_correct);
 
             if (wrongQuestions.length === 0) {
-                container.innerHTML = `
-                    <div class="p-8 text-center bg-indigo-500/10 rounded-3xl border border-indigo-500/30">
-                        <p class="text-indigo-400 font-black">만점입니다! 복습할 오답이 없습니다. 🎉</p>
-                    </div>
-                `;
+                container.innerHTML = `<div class="p-8 text-center bg-indigo-500/10 rounded-3xl border border-indigo-500/30 text-indigo-400 font-black">만점입니다! 🎉</div>`;
             } else {
                 wrongQuestions.forEach(log => {
                     const card = document.createElement('div');
-                    card.className = "bg-slate-800/50 rounded-3xl p-6 border border-slate-700 shadow-lg";
+                    card.className = "bg-slate-800/40 rounded-3xl p-6 border border-slate-700/50 shadow-xl overflow-hidden";
                     
                     let optionsHtml = ['a', 'b', 'c', 'd'].map(key => {
                         const isCorrect = key === log.correct_answer;
                         const isUserChoice = key === log.user_choice;
-                        
-                        let stateClass = "bg-slate-900/50 border-slate-800 text-slate-500";
+                        let stateClass = "bg-slate-900/30 border-slate-800 text-slate-500";
                         if (isCorrect) stateClass = "bg-emerald-500/10 border-emerald-500/40 text-emerald-400 font-bold";
                         if (isUserChoice && !isCorrect) stateClass = "bg-rose-500/10 border-rose-500/40 text-rose-400";
 
                         return `
-                            <div class="flex items-center gap-3 p-3 rounded-xl border ${stateClass} mb-2 last:mb-0">
+                            <div class="flex items-center gap-3 p-3 rounded-xl border ${stateClass} mb-1.5 last:mb-0">
                                 <span class="text-[10px] font-black uppercase">(${key})</span>
                                 <span class="text-xs">${log.options[key]}</span>
-                                ${isCorrect ? '<i class="fa-solid fa-check ml-auto text-[10px]"></i>' : ''}
                             </div>
                         `;
                     }).join('');
 
                     card.innerHTML = `
-                        <div class="mb-3 flex justify-between">
-                            <span class="text-[10px] font-black text-rose-500 uppercase tracking-widest">Question ${log.question_no}</span>
+                        <div class="mb-4">
+                            <span class="text-[10px] font-black text-rose-500 bg-rose-500/10 px-2 py-1 rounded-md uppercase tracking-widest">Question ${log.question_no}</span>
                         </div>
-                        <p class="text-sm font-bold text-slate-200 mb-4 leading-relaxed">${log.question_text}</p>
-                        <div class="space-y-1">
-                            ${optionsHtml}
+                        <p class="text-sm font-bold text-slate-100 mb-4 leading-relaxed">${log.question_text}</p>
+                        <div class="space-y-1 mb-6">${optionsHtml}</div>
+                        
+                        <div class="bg-slate-900/50 rounded-2xl p-4 border-l-4 border-indigo-500 mb-3">
+                            <h4 class="text-[10px] font-black text-indigo-400 uppercase mb-1 tracking-tighter">Translation</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">${log.translation}</p>
+                        </div>
+                        
+                        <div class="bg-indigo-500/5 rounded-2xl p-4 border-l-4 border-emerald-500">
+                            <h4 class="text-[10px] font-black text-emerald-400 uppercase mb-1 tracking-tighter">Explanation</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">${log.explanation}</p>
                         </div>
                     `;
                     container.appendChild(card);
                 });
             }
 
-            // --- [로그인 정보 연동 및 저장] ---
+            // Firebase 저장 로직
             const storedUser = localStorage.getItem('toeic_user');
             let studentName = "Unknown", studentId = "Unknown", studentClass = "Unknown";
             if (storedUser) {
@@ -219,7 +210,6 @@
                 studentId = userData.userId;
                 studentClass = userData.userClass;
             }
-
             try {
                 await db.collection("Manager_Results").add({
                     unit: unitId,
@@ -231,7 +221,7 @@
                     details: logs,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
-            } catch(e) { console.error("데이터 저장 실패: ", e); }
+            } catch(e) { console.error(e); }
         }
 
         initQuiz();
