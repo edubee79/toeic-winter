@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Part 5 숙제 선택</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <header class="bg-white px-6 py-8 border-b border-slate-200">
+        <h1 class="text-2xl font-black text-slate-800">Part 5 Practice</h1>
+        <p class="text-slate-500 text-sm mt-1">완성도 높은 문법 실력을 위한 단원별 훈련</p>
+    </header>
+
+    <main class="p-6">
+        <div class="grid gap-4 max-w-2xl mx-auto" id="unitList">
+            </div>
+    </main>
+
+    <script>
+        // 학습 단원 데이터 정의 (Firebase 문서 ID와 매칭)
+        const units = [
+            { id: "Unit_00_Basic_Structure", title: "Unit 00: 기초 문장 구조", desc: "주어, 목적어, 보어 및 8품사 자리", icon: "fa-layer-group", color: "bg-slate-500" },
+            { id: "Unit_01_Verb_Tense", title: "Unit 01: 동사의 시제", desc: "현재, 과거, 미래 및 완료 시제", icon: "fa-clock", color: "bg-blue-500" },
+            { id: "Unit_02_Passive_Voice", title: "Unit 02: 능동태와 수동태", desc: "태의 구분과 목적어 유무 판단", icon: "fa-arrows-left-right", color: "bg-indigo-500" },
+            { id: "Unit_03_Subject_Verb_Agreement", title: "Unit 03: 주어와 동사의 수 일치", desc: "단수/복수 주어에 따른 동사 결정", icon: "fa-check-double", color: "bg-cyan-500" },
+            { id: "Unit_04_To_Infinitive", title: "Unit 04: to부정사", desc: "명사적, 형용사적, 부사적 용법", icon: "fa-arrow-right-to-bracket", color: "bg-teal-500" },
+            { id: "Unit_05_Preposition", title: "Unit 05: 전치사", desc: "시간, 장소, 방향 및 관용구", icon: "fa-location-dot", color: "bg-orange-500" },
+            { id: "Unit_06_Noun_Pronoun", title: "Unit 06: 명사와 대명사", desc: "가산/불가산 명사 및 격 변화", icon: "fa-user", color: "bg-pink-500" },
+            { id: "Unit_07_Adj_Adv", title: "Unit 07: 형용사와 부사", desc: "수식어구의 위치와 비교급/최상급", icon: "fa-wand-magic-sparkles", color: "bg-purple-500" },
+            { id: "Unit_08_Gerund", title: "Unit 08: 동명사", desc: "동명사만을 목적어로 취하는 동사", icon: "fa-spinner", color: "bg-emerald-500" },
+            { id: "Unit_09_Participle", title: "Unit 09: 분사", desc: "현재분사와 과거분사의 구별", icon: "fa-scissors", color: "bg-amber-500" },
+            { id: "Unit_10_Conjunction", title: "Unit 10: 부사절 및 등위접속사", desc: "문장과 문장을 잇는 연결어", icon: "fa-link", color: "bg-indigo-600" },
+            { id: "Unit_11_Relative_Clause", title: "Unit 11: 형용사절(관계사)", desc: "관계대명사와 관계부사", icon: "fa-diagram-project", color: "bg-violet-500" },
+            { id: "Unit_12_Noun_Clause", title: "Unit 12: 명사절", desc: "that, whether, 의문사절", icon: "fa-box-archive", color: "bg-rose-500" }
+        ];
+
+        function renderUnits() {
+            const listContainer = document.getElementById('unitList');
+            
+            units.forEach((unit, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between group cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all active:scale-[0.98]";
+                
+                // 클릭 시 해당 Unit ID를 파라미터로 전달하며 이동
+                card.onclick = () => {
+                    location.href = `Homework_Part5.html?unit=${unit.id}`;
+                };
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 ${unit.color} text-white rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid ${unit.icon}"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">${unit.title}</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">${unit.desc}</p>
+                        </div>
+                    </div>
+                    <div class="text-slate-300 group-hover:text-indigo-400 transition-colors">
+                        <i class="fa-solid fa-chevron-right text-lg"></i>
+                    </div>
+                `;
+                
+                listContainer.appendChild(card);
+            });
+        }
+
+        window.onload = renderUnits;
+    </script>
+</body>
+</html>

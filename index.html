@@ -27,6 +27,12 @@
         </div>
 
         <div class="grid gap-4">
+            <button onclick="location.href='Part5_Lobby.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg border-l-4 border-l-indigo-500">
+                <i class="fas fa-pen-to-square absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-indigo-500/30 transition-colors"></i>
+                <span class="text-indigo-500 font-black text-xs uppercase tracking-widest">Part 5</span>
+                <h3 class="text-xl font-black mt-1">GRAMMAR MISSION</h3>
+            </button>
+
             <button onclick="location.href='shadowing1.html'" class="group relative bg-slate-800 p-8 rounded-[2.5rem] text-left border border-slate-700 active:scale-95 transition-all overflow-hidden shadow-lg">
                 <i class="fas fa-microphone-alt absolute right-8 top-1/2 -translate-y-1/2 text-5xl text-slate-700/30 group-hover:text-indigo-500/30 transition-colors"></i>
                 <span class="text-indigo-400 font-black text-xs uppercase tracking-widest">Part 1</span>
@@ -54,12 +60,11 @@
     </main>
 
     <script>
-        // ✅ 페이지 로드 시 사용자 정보 확인 (강사님의 데이터 구조에 최적화)
+        // ✅ 페이지 로드 시 사용자 정보 확인
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
             
             if (user && user.userId) {
-                // 상단 네비바에 '650반 홍길동(학번)' 형식으로 표시
                 const infoText = `${user.userClass}반 ${user.userName || ''} (${user.userId})`;
                 document.getElementById('user-display').innerText = infoText;
             } else {
