@@ -14,8 +14,8 @@
         <div class="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center mb-6 shadow-2xl animate-bounce">
             <i class="fas fa-microphone text-3xl text-white"></i>
         </div>
-        <h2 class="text-2xl font-black mb-2 tracking-tighter">학습 시작하기</h2>
-        <p class="text-slate-400 font-bold text-sm mb-8">모바일 음성 인식을 활성화하기 위해<br>아래 버튼을 눌러주세요.</p>
+        <h2 id="overlay-title" class="text-2xl font-black mb-2 tracking-tighter">학습 시작하기</h2>
+        <p id="overlay-msg" class="text-slate-400 font-bold text-sm mb-8">모바일 음성 인식을 활성화하기 위해<br>아래 버튼을 눌러주세요.</p>
         <button id="permission-btn" class="w-full max-w-xs py-5 bg-white text-slate-900 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all">권한 허용 및 시작</button>
     </div>
 
@@ -28,11 +28,11 @@
     <main class="max-w-md mx-auto px-6 pb-20 text-center">
         <div class="mb-10 flex justify-between items-end text-left">
             <div>
-                <p class="text-indigo-500 text-[10px] font-black uppercase tracking-widest mb-1">Step 02. Shadowing</p>
+                <p id="set-info" class="text-indigo-500 text-[10px] font-black uppercase tracking-widest mb-1 italic">Set 1 / 5</p>
                 <h2 class="text-2xl font-black italic">Listen & Repeat</h2>
             </div>
             <div id="progress-area" class="text-right">
-                <span id="progress-text" class="text-indigo-400 font-black text-2xl">1</span><span id="total-text" class="text-slate-700 font-bold text-lg"> / --</span>
+                <span id="progress-text" class="text-indigo-400 font-black text-2xl">1</span><span id="total-text" class="text-slate-700 font-bold text-lg"> / 20</span>
             </div>
         </div>
 
@@ -60,7 +60,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, addDoc, collection, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8",
@@ -73,9 +73,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // [데이터 부분 생략 없음 - 기존 데이터 유지됨]
+        // --- 선생님의 데이터를 100문장으로 합쳤습니다 ---
         const allShadowData = {
             1: [
+                // Day 1 (1-33)
                 {en: "Some people are gathered around a table.", ko: "사람들이 테이블에 둘러앉아 있다."},
                 {en: "He is leaning against the railing.", ko: "그는 난간에 기대어 있다."},
                 {en: "A woman is reaching for an item.", ko: "여자가 물건을 잡으려고 손을 뻗고 있다."},
@@ -108,9 +109,8 @@
                 {en: "A man is tying his shoelaces.", ko: "남자가 신발끈을 묶고 있다."},
                 {en: "They are sitting across from each other.", ko: "그들이 서로 마주 보고 앉아 있다."},
                 {en: "He is reading a menu.", ko: "그는 메뉴판을 읽고 있다."},
-                {en: "She is carrying a briefcase.", ko: "그녀가 서류 가방을 들고 있다."}
-            ],
-            2: [
+                {en: "She is carrying a briefcase.", ko: "그녀가 서류 가방을 들고 있다."},
+                // Day 2 (34-66)
                 {en: "Merchandise is being displayed in the shop.", ko: "상품이 가게에 전시되고 있다."},
                 {en: "A plant has been placed in the corner.", ko: "식물이 구석에 놓여 있다."},
                 {en: "The vehicles are parked in a row.", ko: "차량들이 한 줄로 주차되어 있다."},
@@ -143,9 +143,8 @@
                 {en: "A bridge connects the two islands.", ko: "다리가 두 섬을 연결하고 있다."},
                 {en: "Windows are being cleaned.", ko: "창문들이 닦이고 있다."},
                 {en: "Flower pots decorate the windowsills.", ko: "화분들이 창틀을 장식하고 있다."},
-                {en: "The garage door is closed.", ko: "차고 문이 닫혀 있다."}
-            ],
-            3: [
+                {en: "The garage door is closed.", ko: "차고 문이 닫혀 있다."},
+                // Day 3 (67-100)
                 {en: "A reflection is visible in the window.", ko: "창문에 비친 모습이 보인다."},
                 {en: "Construction work is in progress.", ko: "공사가 진행 중이다."},
                 {en: "The containers have been emptied.", ko: "용기들이 비워져 있다."},
@@ -187,7 +186,22 @@
         const synth = window.speechSynthesis;
         let currentIndex = 0;
         let attemptCount = 0;
-        let currentDayData = [];
+        let currentDayFullData = [];
+        let displaySentences = [];
+        
+        let currentDay = localStorage.getItem('shadow_day') || 1;
+        let currentSet = 1;
+        const sentencesPerSet = 20;
+
+        // 시작 시 이어하기 확인
+        window.onload = () => {
+            const savedSet = localStorage.getItem(`save_set_unit${currentDay}`);
+            if(savedSet && savedSet > 1 && savedSet <= 5) {
+                document.getElementById('overlay-title').innerText = "이어서 학습할까요?";
+                document.getElementById('overlay-msg').innerHTML = `마지막으로 <b>Set ${savedSet-1}</b>을 마쳤습니다.<br><b>Set ${savedSet}</b>을 시작하시겠습니까?`;
+                currentSet = parseInt(savedSet);
+            }
+        };
 
         document.getElementById('permission-btn').addEventListener('click', async function() {
             try {
@@ -212,31 +226,35 @@
         }, { once: true });
 
         function initSession() {
-            const day = localStorage.getItem('shadow_day') || 1;
-            currentDayData = allShadowData[day] || allShadowData[1];
+            currentDayFullData = allShadowData[currentDay] || [];
+            // 20개씩 끊어서 현재 세트 데이터 추출
+            const startIdx = (currentSet - 1) * sentencesPerSet;
+            const endIdx = startIdx + sentencesPerSet;
+            displaySentences = currentDayFullData.slice(startIdx, endIdx);
+            
+            document.getElementById('set-info').innerText = `Set ${currentSet} / 5`;
             loadSentence();
         }
 
         function loadSentence() {
-            const data = currentDayData[currentIndex];
+            const data = displaySentences[currentIndex];
             attemptCount = 0; 
             updateAttemptUI();
 
             document.getElementById('target-sentence').innerText = data.en;
             document.getElementById('sentence-mean').innerText = data.ko;
-            document.getElementById('total-text').innerText = " / " + currentDayData.length;
+            document.getElementById('total-text').innerText = " / " + displaySentences.length;
             document.getElementById('progress-text').innerText = currentIndex + 1;
             
             document.getElementById('sentence-box').classList.add('blur-md');
             document.getElementById('play-overlay').style.display = 'flex';
             document.getElementById('mic-btn').disabled = true;
-            document.getElementById('mic-btn').innerText = "소리를 먼저 들으세요";
             document.getElementById('mic-btn').className = "w-full py-8 bg-slate-800 text-slate-600 rounded-[2.5rem] text-xl font-black";
         }
 
         document.getElementById('real-play-btn').onclick = () => {
             synth.cancel();
-            const utter = new SpeechSynthesisUtterance(currentDayData[currentIndex].en);
+            const utter = new SpeechSynthesisUtterance(displaySentences[currentIndex].en);
             utter.lang = 'en-US';
             utter.rate = 0.8;
             utter.onend = () => {
@@ -258,7 +276,7 @@
 
         function handleResult(speech) {
             document.getElementById('user-transcript').innerText = `내 발음: "${speech}"`;
-            const target = currentDayData[currentIndex].en.toLowerCase().replace(/[.,!?]/g, "");
+            const target = displaySentences[currentIndex].en.toLowerCase().replace(/[.,!?]/g, "");
             const result = speech.toLowerCase().replace(/[.,!?]/g, "");
 
             if (result.includes(target) || result.split(' ').length > 3) {
@@ -278,49 +296,51 @@
 
         function nextSentence() {
             currentIndex++;
-            if (currentIndex < currentDayData.length) {
+            if (currentIndex < displaySentences.length) {
                 loadSentence();
             } else {
                 finishSession();
             }
         }
 
-        // [수정됨] 관리자 페이지와 연동되도록 저장 로직 변경
         async function finishSession() {
             const storedUser = localStorage.getItem('toeic_user');
-            const day = localStorage.getItem('shadow_day') || 1;
+            if(!storedUser) return;
             
-            if(storedUser) {
-                const user = JSON.parse(storedUser);
-                try {
-                    // 'Winter_Users' 컬렉션에 'completed_shadowing' 배열로 저장
-                    await setDoc(doc(db, "Winter_Users", user.userId), {
-                        userId: user.userId,
-                        userName: user.userName,
-                        userClass: user.userClass,
-                        // Unit 01, Unit 02 형식으로 저장
-                        completed_shadowing: arrayUnion(`Unit ${day.toString().padStart(2, '0')}`),
-                        lastUpdate: new Date().toISOString()
-                    }, { merge: true });
+            const user = JSON.parse(storedUser);
+            // 관리자 확인용 유닛 이름 (예: Shadowing_Unit01_Set1)
+            const unitName = `Shadowing_Unit${String(currentDay).padStart(2, '0')}_Set${currentSet}`;
 
-                    alert(`🏆 오늘의 Shadowing Unit ${day} 학습을 모두 마쳤습니다! 기록이 관리자에게 전송되었습니다.`);
-                } catch (e) {
-                    console.error("기록 저장 실패:", e);
-                    alert("학습은 마쳤으나 기록 저장 중에 오류가 발생했습니다.");
+            try {
+                // 1. 관리자 실시간 로그 전송
+                await addDoc(collection(db, "Manager_Results"), {
+                    student: user.userName,
+                    studentId: user.userId,
+                    unit: unitName,
+                    score: sentencesPerSet,
+                    total: sentencesPerSet,
+                    timestamp: serverTimestamp()
+                });
+
+                // 2. 이어하기 기록 저장
+                const nextSet = currentSet + 1;
+                if(nextSet <= 5) {
+                    localStorage.setItem(`save_set_unit${currentDay}`, nextSet);
+                    if(confirm(`Set ${currentSet} 완료! 다음 세트(Set ${nextSet})를 이어서 하시겠습니까?`)) {
+                        location.href = `shadowing1.html?set=${nextSet}`;
+                    } else {
+                        location.href = "index.html";
+                    }
+                } else {
+                    alert("🎉 대단합니다! 100문장 전체 미션을 클리어했습니다!");
+                    localStorage.removeItem(`save_set_unit${currentDay}`);
+                    location.href = "index.html";
                 }
-            } else {
-                alert("학습 완료! (로그인 정보가 없어 서버에 저장되지는 않았습니다)");
-            }
-            location.href = "index.html"; 
+            } catch (e) { console.error(e); }
         }
 
         function updateAttemptUI() {
-            const counterEl = document.getElementById('attempt-counter');
-            if (attemptCount > 0) {
-                counterEl.innerText = `Attempt: ${attemptCount} / 5`;
-            } else {
-                counterEl.innerText = "";
-            }
+            document.getElementById('attempt-counter').innerText = attemptCount > 0 ? `Attempt: ${attemptCount} / 5` : "";
         }
 
         function resetMicBtn() {
