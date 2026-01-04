@@ -52,8 +52,8 @@
             </button>
         </div>
 
-        <div class="mt-24 flex justify-center opacity-30 hover:opacity-100 transition-opacity">
-            <button onclick="accessAdmin()" class="flex items-center gap-2 text-slate-500 text-[9px] font-black tracking-[0.2em] uppercase border border-slate-800 px-4 py-2 rounded-full hover:bg-slate-800 transition-all">
+        <div class="mt-24 flex justify-center opacity-20 hover:opacity-100 transition-opacity">
+            <button onclick="accessAdmin()" class="flex items-center gap-2 text-slate-500 text-[9px] font-black tracking-[0.2em] uppercase border border-slate-800 px-4 py-2 rounded-full hover:bg-slate-800 hover:text-indigo-400 transition-all">
                 <i class="fas fa-shield-alt"></i> Access Admin
             </button>
         </div>
@@ -79,13 +79,15 @@
             }
         }
 
+        // ✅ 관리자 접근 함수 (비밀번호 수정됨)
         function accessAdmin() {
-            const adminPassword = "kang1818^^"; 
+            const adminPassword = "Kang1818^^"; // 요청하신 대문자 포함 비밀번호
             const userInput = prompt("관리자 비밀번호를 입력하세요.");
+            
             if (userInput === adminPassword) {
                 location.href = "admin.html";
             } else if (userInput !== null) {
-                alert("접근 권한이 없습니다.");
+                alert("비밀번호가 일치하지 않습니다.");
             }
         }
     </script>
