@@ -60,9 +60,16 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", authDomain: "eduthot-fb088.firebaseapp.com", projectId: "eduthot-fb088", storageBucket: "eduthot-fb088.firebasestorage.app", messagingSenderId: "919552710378", appId: "1:919552710378:web:7ba72ea2d195e092f8a993" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", 
+            authDomain: "eduthot-fb088.firebaseapp.com", 
+            projectId: "eduthot-fb088", 
+            storageBucket: "eduthot-fb088.firebasestorage.app", 
+            messagingSenderId: "919552710378", 
+            appId: "1:919552710378:web:7ba72ea2d195e092f8a993" 
+        };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -175,7 +182,7 @@
                 {c:0, s:"How are the database updates coming along?", o:["I’ve been really busy with the Williams account", "some customer addresses", "she arrives on Wednesday"]},
                 {c:2, s:"When can I bring these boxes into the warehouse?", o:["the in a package", "thanks, I just bought it", "we’ll need to clear some space"]},
                 {c:1, s:"The market on fifth street is closed for a week.", o:["some new clothes", "is there another one nearby?", "the price has been marked down"]},
-                {c:1, s:"Does the company pay for professional-development courses?", o:["Insook helped develop a new product", "we do have a significant budget surplus", "(C) No information"]}
+                {c:1, s:"Does the company pay for professional-development courses?", o:["Insook helped develop a new product", "we do have a significant budget surplus", "No information"]}
             ]),
             5: generateData([
                 {c:0, s:"There's a meeting in the conference room soon, right?", o:["Yes, it's for the whole department.", "No, put it in the closet.", "The rent is too high."]},
@@ -301,30 +308,43 @@
             }
         }
 
-        function showReviewPrompt() {
+       function showReviewPrompt() {
             document.getElementById('quiz-container').classList.add('hidden');
             document.getElementById('review-overlay').classList.remove('hidden');
         }
 
         window.startReview = function() {
-            isReviewMode = true; currentIdx = 0;
+            isReviewMode = true; 
+            currentIdx = 0;
             document.getElementById('quiz-container').classList.remove('hidden');
             document.getElementById('review-overlay').classList.add('hidden');
             loadQuestion();
         };
 
+        // 전체 학습 완료 시 실행되는 함수
         async function finishAll() {
             const user = JSON.parse(localStorage.getItem('toeic_user'));
             if (user) {
                 try {
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    // 핵심: shadowing2 필드에 날짜 기록 (merge: true로 기존 데이터 보호)
                     await setDoc(doc(db, "Winter_Users", user.userId), {
-                        completed_part2: arrayUnion(`Test ${currentTestNum} 완료`),
-                        lastUpdate: new Date().toISOString()
+                        com_shadowing2: today,
+                        // 혹시 몰라 Part 2 학습 횟수를 카운트하고 싶다면 아래 주석 해제
+                        // shadowing2_count: increment(1) 
                     }, { merge: true });
-                } catch(e) { console.error(e); }
+                    
+                    alert("축하합니다! Part 2 실전 훈련을 모두 완료하셨습니다.");
+                    location.href = 'index.html';
+                } catch (e) {
+                    console.error("데이터 저장 중 오류 발생:", e);
+                    alert("결과를 저장하지 못했습니다. 다시 시도해 주세요.");
+                }
+            } else {
+                alert("학습이 완료되었습니다! (로그인 정보가 없어 기록되지 않습니다.)");
+                location.href = 'index.html';
             }
-            alert(`🏆 TEST ${currentTestNum} 완료!`);
-            location.href = "index.html";
         }
     </script>
 </body>

@@ -3,45 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | Management</title>
+    <title>Admin | Student Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css'); body { font-family: 'Pretendard', sans-serif; }</style>
 </head>
 <body class="bg-slate-100 p-8">
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <header class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">STUDENT STATUS</h1>
-            <div class="flex gap-2">
-                <button onclick="filterClass('all')" class="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold">전체</button>
-                <button onclick="filterClass('650')" class="px-4 py-2 bg-white text-slate-600 rounded-xl text-sm font-bold border border-slate-200">650반</button>
-                <button onclick="filterClass('780')" class="px-4 py-2 bg-white text-slate-600 rounded-xl text-sm font-bold border border-slate-200">780반</button>
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">Student Status</h1>
+                <p class="text-slate-500 text-xs font-bold mt-1">실시간 문법 숙제 및 단어 현황</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="location.href='Manager_Logs.html'" class="px-5 py-2.5 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-list-check"></i> 상세 제출 로그 보기
+                </button>
+
+                <div id="filter-container" class="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200">
+                    <button onclick="filterClass('all', this)" class="filter-btn px-5 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-200">전체</button>
+                    <button onclick="filterClass('650', this)" class="filter-btn px-5 py-2 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all">650반</button>
+                    <button onclick="filterClass('780', this)" class="filter-btn px-5 py-2 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all">780반</button>
+                </div>
             </div>
         </header>
 
         <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-200">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-slate-50 border-b border-slate-100">
+                    <tr class="bg-slate-50 border-b border-slate-200">
                         <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Class</th>
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">ID (학번)</th>
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Name (이름)</th>
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress (Voca)</th>
-                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Progress (Shadow)</th>
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student Info</th>
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Voca Progress</th>
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-indigo-50/30 text-indigo-500">Grammar Homework (Recent)</th>
+                        <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Shadowing</th>
                     </tr>
                 </thead>
                 <tbody id="student-list">
-                    </tbody>
+                    <tr><td colspan="5" class="p-20 text-center text-slate-300 font-bold"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i> 로딩 중...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", authDomain: "eduthot-fb088.firebaseapp.com", projectId: "eduthot-fb088", storageBucket: "eduthot-fb088.firebasestorage.app", messagingSenderId: "919552710378", appId: "1:919552710378:web:7ba72ea2d195e092f8a993" };
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8", 
+            authDomain: "eduthot-fb088.firebaseapp.com", 
+            projectId: "eduthot-fb088", 
+            storageBucket: "eduthot-fb088.firebasestorage.app", 
+            messagingSenderId: "919552710378", 
+            appId: "1:919552710378:web:7ba72ea2d195e092f8a993" 
+        };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        let homeworkResults = {};
+        let currentFilter = 'all'; // 현재 필터 상태 저장용
+
+        function listenToHomework() {
+            const q = query(collection(db, "Manager_Results"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                homeworkResults = {};
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (!homeworkResults[data.student]) {
+                        homeworkResults[data.student] = data;
+                    }
+                });
+                loadStudents();
+            });
+        }
 
         async function loadStudents() {
             const querySnapshot = await getDocs(collection(db, "Winter_Users"));
@@ -50,30 +86,83 @@
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50 transition-colors border-b border-slate-50";
-                row.setAttribute('data-class', data.userClass);
+                const hw = homeworkResults[data.userId] || homeworkResults[data.userName] || null;
                 
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors border-b border-slate-50 group";
+                
+                // 데이터 필터링을 위한 속성 추가
+                row.setAttribute('data-class', String(data.userClass));
+                
+                // 현재 필터링 상태에 따라 로딩 시 바로 숨김/보임 처리
+                if (currentFilter !== 'all' && String(data.userClass) !== currentFilter) {
+                    row.style.display = 'none';
+                }
+
+                let hwBadge = `<span class="text-slate-300 italic text-[10px]">No Record</span>`;
+                if(hw) {
+                    const scoreColor = hw.score / hw.total >= 0.8 ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600';
+                    hwBadge = `
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black text-indigo-500 mb-1">${hw.unit.replace(/_/g, ' ')}</span>
+                            <span class="${scoreColor} px-2 py-1 rounded-md text-[10px] font-black w-fit">${hw.score} / ${hw.total} (${Math.round((hw.score/hw.total)*100)}점)</span>
+                        </div>
+                    `;
+                }
+
+                // Shadowing 기록 표시 (com_shadowing2 포함)
+                let shadowingText = '기록 없음';
+                const shadowList = [];
+                if (data.completed_shadowing) shadowList.push(...data.completed_shadowing);
+                if (data.com_shadowing2) shadowList.push(`Part2(${data.com_shadowing2})`);
+                if (shadowList.length > 0) shadowingText = shadowList.join(', ');
+
                 row.innerHTML = `
-                    <td class="p-5 font-bold text-slate-500">${data.userClass}</td>
-                    <td class="p-5 font-medium text-slate-400">${data.userId}</td>
-                    <td class="p-5 font-black text-slate-900">${data.userName || '미입력'}</td>
-                    <td class="p-5"><span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-black">DAY ${data.passedVocaDays ? data.passedVocaDays.join(', ') : '-'}</span></td>
-                    <td class="p-5 text-xs text-slate-400 truncate max-w-[150px]">${data.completed_shadowing ? data.completed_shadowing.join(', ') : '기록 없음'}</td>
+                    <td class="p-5 font-bold text-slate-500">${data.userClass}반</td>
+                    <td class="p-5">
+                        <div class="flex flex-col">
+                            <span class="font-black text-slate-900">${data.userName || '미입력'}</span>
+                            <span class="text-[10px] text-slate-400 font-medium">${data.userId}</span>
+                        </div>
+                    </td>
+                    <td class="p-5">
+                        <div class="flex flex-wrap gap-1">
+                            ${data.passedVocaDays ? data.passedVocaDays.map(day => `<span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-bold">DAY ${day}</span>`).join('') : '-'}
+                        </div>
+                    </td>
+                    <td class="p-5 bg-indigo-50/10">${hwBadge}</td>
+                    <td class="p-5">
+                        <p class="text-[10px] text-slate-400 line-clamp-2 max-w-[120px]">${shadowingText}</p>
+                    </td>
                 `;
                 list.appendChild(row);
             });
         }
 
-        window.filterClass = (cls) => {
+        // 필터링 함수
+        window.filterClass = (cls, btn) => {
+            currentFilter = String(cls);
+            
+            // 버튼 스타일 초기화 및 활성화 효과
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(b => {
+                b.className = "filter-btn px-5 py-2 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all";
+            });
+            btn.className = "filter-btn px-5 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-200";
+
+            // 테이블 행 필터링
             const rows = document.querySelectorAll('#student-list tr');
             rows.forEach(row => {
-                if(cls === 'all') row.style.display = '';
-                else row.style.display = row.getAttribute('data-class') === cls ? '' : 'none';
+                const userClass = row.getAttribute('data-class');
+                if(cls === 'all') {
+                    row.style.display = '';
+                } else {
+                    row.style.display = (userClass === cls) ? '' : 'none';
+                }
             });
         };
 
-        loadStudents();
+        listenToHomework();
     </script>
 </body>
 </html>

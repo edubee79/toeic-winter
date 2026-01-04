@@ -20,7 +20,7 @@
     </div>
 
     <nav class="p-6 flex justify-between items-center max-w-md mx-auto">
-        <button onclick="location.reload()" class="text-slate-400"><i class="fas fa-rotate-left text-xl"></i></button>
+        <button onclick="location.href='index.html'" class="text-slate-400"><i class="fas fa-arrow-left text-xl"></i></button>
         <h1 id="nav-title" class="font-black text-lg tracking-tighter italic text-indigo-400 uppercase">SHADOWING</h1>
         <div class="w-8"></div>
     </nav>
@@ -60,7 +60,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBThrCtBNJuVcfPD3Vm6XvPD7McT5JJsN8",
@@ -73,6 +73,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // [데이터 부분 생략 없음 - 기존 데이터 유지됨]
         const allShadowData = {
             1: [
                 {en: "Some people are gathered around a table.", ko: "사람들이 테이블에 둘러앉아 있다."},
@@ -261,7 +262,6 @@
             const result = speech.toLowerCase().replace(/[.,!?]/g, "");
 
             if (result.includes(target) || result.split(' ').length > 3) {
-                alert("Great!");
                 nextSentence();
             } else {
                 attemptCount++;
@@ -285,16 +285,32 @@
             }
         }
 
+        // [수정됨] 관리자 페이지와 연동되도록 저장 로직 변경
         async function finishSession() {
-            const user = JSON.parse(localStorage.getItem('toeic_user'));
+            const storedUser = localStorage.getItem('toeic_user');
             const day = localStorage.getItem('shadow_day') || 1;
-            if(user) {
-                await setDoc(doc(db, "Winter_Users", user.userId), {
-                    [`shadow_day_${day}_pass`]: true,
-                    lastShadowDate: new Date().toISOString()
-                }, { merge: true });
+            
+            if(storedUser) {
+                const user = JSON.parse(storedUser);
+                try {
+                    // 'Winter_Users' 컬렉션에 'completed_shadowing' 배열로 저장
+                    await setDoc(doc(db, "Winter_Users", user.userId), {
+                        userId: user.userId,
+                        userName: user.userName,
+                        userClass: user.userClass,
+                        // Unit 01, Unit 02 형식으로 저장
+                        completed_shadowing: arrayUnion(`Unit ${day.toString().padStart(2, '0')}`),
+                        lastUpdate: new Date().toISOString()
+                    }, { merge: true });
+
+                    alert(`🏆 오늘의 Shadowing Unit ${day} 학습을 모두 마쳤습니다! 기록이 관리자에게 전송되었습니다.`);
+                } catch (e) {
+                    console.error("기록 저장 실패:", e);
+                    alert("학습은 마쳤으나 기록 저장 중에 오류가 발생했습니다.");
+                }
+            } else {
+                alert("학습 완료! (로그인 정보가 없어 서버에 저장되지는 않았습니다)");
             }
-            alert("오늘의 쉐도잉 학습을 모두 마쳤습니다!");
             location.href = "index.html"; 
         }
 
